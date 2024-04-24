@@ -14,8 +14,7 @@ db_config = {
 
 @app.route('/')
 def root():
-    if session.get('logged_in'):
-        return redirect(url_for('protected'))
+    # Return content for the root page
     return render_template('login.html')
 
 # Define your authenticate_user function here
@@ -44,6 +43,8 @@ def authenticate_user(username, password):
         if 'conn' in locals():
             conn.close()
 
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -62,16 +63,17 @@ def login():
             return render_template('login.html', error="Invalid username or password")
     else:
         # Handle GET request for login (render login form)
-        if session.get('logged_in'):
-            return redirect(url_for('protected'))
         return render_template('login.html')
-
+    
 # Basic protected route example
-@app.route('/protected')
+@app.route('/protected', methods=['GET'])
 def protected():
-    if not session.get('logged_in'):
+    if session.get('logged_in'):
+        # let the user see the protected page
+        return render_template('protected.html', username=session['username'])
+    else:
+        # otherwise redirect to somewhere else
         return redirect(url_for('login'))
-    return render_template('protected.html', username=session['username'])
 
 # Logout route
 @app.route('/logout')
@@ -82,3 +84,8 @@ def logout():
 
 if __name__ == '__main__':
     app.run(debug=True, port=8080)
+
+
+
+
+# /usr/local/bin/python3 app.py
