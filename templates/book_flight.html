@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Book Flight</title>
+</head>
+<body>
+    <h1>Book Flight</h1>
+    <form method="POST" action="{{ url_for('book_flight') }}">
+        <label for="flight_no">Flight Number:</label>
+        <input type="text" id="flight_no" name="flight_no" required><br>
+        <label for="departure_date">Departure Date:</label>
+        <input type="date" id="departure_date" name="departure_date" required><br>
+        <label for="departure_time">Departure Time:</label>
+        <input type="time" id="departure_time" name="departure_time" required><br>
+        <label for="airline_name">Airline Name:</label>
+        <input type="text" id="airline_name" name="airline_name" required><br>
+        <label for="first_name">First Name:</label>
+        <input type="text" id="first_name" name="first_name" required><br>
+        <label for="last_name">Last Name:</label>
+        <input type="text" id="last_name" name="last_name" required><br>
+        <label for="dob">Date of Birth:</label>
+        <input type="date" id="dob" name="dob" required><br>
+        <input type="submit" value="Book Flight">
+    </form>
+</body>
+</html>

@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cancel Flight</title>
+</head>
+<body>
+    <h1>Cancel Flight</h1>
+    <form method="POST" action="{{ url_for('cancel_flight') }}">
+        <label for="ticket_id">Ticket ID:</label>
+        <input type="text" id="ticket_id" name="ticket_id" required><br>
+        <input type="submit" value="Cancel Flight">
+    </form>
+</body>
+</html>
