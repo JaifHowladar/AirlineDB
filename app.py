@@ -30,6 +30,8 @@ def login():
         password = request.form['password']
         user_type = request.form['user_type']
 
+        print(f"Login attempt: username_or_email={username_or_email}, password={password}, user_type={user_type}")
+
         conn = get_db_connection()
         cursor = conn.cursor()
 
@@ -37,24 +39,53 @@ def login():
             if user_type == 'customer':
                 query = "SELECT * FROM Customer WHERE email_address = %s"
                 cursor.execute(query, (username_or_email,))
-            elif user_type == 'staff':
-                query = "SELECT * FROM AirlineStaff WHERE username = %s OR email_address = %s"
-                cursor.execute(query, (username_or_email, username_or_email))
-            else:
-                return render_template('login.html', error='Invalid user type')
+                user = cursor.fetchone()
 
-            user = cursor.fetchone()
+                print(f"Customer user: {user}")
 
-            if user:
-                hashed_password = user[2]  # Assuming the password is stored in the third column
-                if check_password_hash(hashed_password, password):
-                    session['user_id'] = user[0]  # Assuming the first column is the unique identifier
-                    session['user_type'] = user_type
-                    return redirect(url_for('dashboard'))
+                if user:
+                    hashed_password = user[3]  # Password is stored in the fourth column for Customer
+                    print(f"Hashed password from database: {hashed_password}")
+                    print(f"Entered password: {password}")
+                    if check_password_hash(hashed_password, password):
+                        session['user_id'] = user[0]  # Assuming the email_address is the unique identifier
+                        session['user_type'] = user_type
+                        print("Login successful")
+                        return redirect(url_for('dashboard'))
+                    else:
+                        print("Invalid password")
+                        return render_template('login.html', error='Invalid username, email, or password')
                 else:
+                    print("User not found")
                     return render_template('login.html', error='Invalid username, email, or password')
+
+            elif user_type == 'staff':
+                query = "SELECT * FROM AirlineStaff WHERE username = %s"
+                cursor.execute(query, (username_or_email,))
+                user = cursor.fetchone()
+
+                print(f"Staff user: {user}")
+
+                if user:
+                    hashed_password = user[1]  # Password is stored in the second column for AirlineStaff
+                    print(f"Hashed password from database: {hashed_password}")
+                    print(f"Entered password: {password}")
+                    
+                    if check_password_hash(hashed_password, password):
+                        session['user_id'] = user[0]  # Assuming the username is the unique identifier
+                        session['user_type'] = user_type
+                        print("Login successful")
+                        return redirect(url_for('dashboard'))
+                    else:
+                        print("Invalid password")
+                        return render_template('login.html', error='Invalid username, email, or password')
+                else:
+                    print("User not found")
+                    return render_template('login.html', error='Invalid username, email, or password')
+
             else:
-                return render_template('login.html', error='Invalid username, email, or password')
+                print("Invalid user type")
+                return render_template('login.html', error='Invalid user type')
 
         except Exception as e:
             print(f"An error occurred during login: {str(e)}")
@@ -92,9 +123,11 @@ def register():
                 cursor = conn.cursor()
 
                 hashed_password = generate_password_hash(password)
+                print(password)
+                print(hashed_password)
 
-                query = "INSERT INTO Customer (email_address, password, first_name, last_name, building_no, street_name, apartment_num, city, state, zip, passport_num, passport_exp, passport_country, date_of_birth) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-                values = (email, hashed_password, first_name, last_name, building_no, street_name, apartment_num, city, state, zip_code, passport_num, passport_exp, passport_country, date_of_birth)
+                query = "INSERT INTO Customer (email_address, first_name, last_name, password, building_no, street_name, apartment_num, city, state, zip, passport_num, passport_exp, passport_country, date_of_birth) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                values = (email, first_name, last_name, hashed_password, building_no, street_name, apartment_num, city, state, zip_code, passport_num, passport_exp, passport_country, date_of_birth)
 
                 cursor.execute(query, values)
                 conn.commit()
