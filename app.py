@@ -2,6 +2,7 @@ import traceback
 import mysql.connector
 from flask import Flask, render_template, request, redirect, url_for, session
 from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -34,23 +35,24 @@ def login():
 
         try:
             if user_type == 'customer':
-                query = "SELECT * FROM Customer WHERE email_address = %s AND password = %s"
-                cursor.execute(query, (username_or_email, password))
+                query = "SELECT * FROM Customer WHERE email_address = %s"
+                cursor.execute(query, (username_or_email,))
             elif user_type == 'staff':
-                query = """
-                    SELECT * FROM AirlineStaff
-                    WHERE (username = %s OR email_address = %s) AND password = %s
-                """
-                cursor.execute(query, (username_or_email, username_or_email, password))
+                query = "SELECT * FROM AirlineStaff WHERE username = %s OR email_address = %s"
+                cursor.execute(query, (username_or_email, username_or_email))
             else:
                 return render_template('login.html', error='Invalid user type')
 
             user = cursor.fetchone()
 
             if user:
-                session['user_id'] = user[0]  # Assuming the first column is the unique identifier
-                session['user_type'] = user_type
-                return redirect(url_for('dashboard'))
+                hashed_password = user[2]  # Assuming the password is stored in the third column
+                if check_password_hash(hashed_password, password):
+                    session['user_id'] = user[0]  # Assuming the first column is the unique identifier
+                    session['user_type'] = user_type
+                    return redirect(url_for('dashboard'))
+                else:
+                    return render_template('login.html', error='Invalid username, email, or password')
             else:
                 return render_template('login.html', error='Invalid username, email, or password')
 
@@ -89,8 +91,10 @@ def register():
                 conn = get_db_connection()
                 cursor = conn.cursor()
 
+                hashed_password = generate_password_hash(password)
+
                 query = "INSERT INTO Customer (email_address, password, first_name, last_name, building_no, street_name, apartment_num, city, state, zip, passport_num, passport_exp, passport_country, date_of_birth) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-                values = (email, password, first_name, last_name, building_no, street_name, apartment_num, city, state, zip_code, passport_num, passport_exp, passport_country, date_of_birth)
+                values = (email, hashed_password, first_name, last_name, building_no, street_name, apartment_num, city, state, zip_code, passport_num, passport_exp, passport_country, date_of_birth)
 
                 cursor.execute(query, values)
                 conn.commit()
@@ -120,6 +124,8 @@ def register():
                 conn = get_db_connection()
                 cursor = conn.cursor()
 
+                hashed_password = generate_password_hash(password)
+
                 # Check if the airline exists
                 query = "SELECT COUNT(*) FROM Airline WHERE airline_name = %s"
                 cursor.execute(query, (airline_name,))
@@ -128,7 +134,7 @@ def register():
                 if airline_exists:
                     # Insert data into the AirlineStaff table
                     query = "INSERT INTO AirlineStaff (username, password, first_name, last_name, airline_name, dob) VALUES (%s, %s, %s, %s, %s, %s)"
-                    values = (username, password, first_name, last_name, airline_name, date_of_birth)
+                    values = (username, hashed_password, first_name, last_name, airline_name, date_of_birth)
                     cursor.execute(query, values)
 
                     # Check if the email address already exists for the username
@@ -346,6 +352,342 @@ def track_spending():
         return render_template('track_spending.html', total_spending=total_spending, monthly_spending=monthly_spending)
     else:
         return redirect(url_for('login'))
+
+@app.route('/flight_status', methods=['GET', 'POST'])
+def flight_status():
+    if request.method == 'POST':
+        airline_name = request.form['airline_name']
+        flight_number = request.form['flight_number']
+        arrival_departure_date = request.form['arrival_departure_date']
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        query = "SELECT * FROM Flight WHERE airline_name = %s AND flight_no = %s AND (departure_date = %s OR arrival_date = %s)"
+        values = (airline_name, flight_number, arrival_departure_date, arrival_departure_date)
+        cursor.execute(query, values)
+        flight = cursor.fetchone()
+
+        cursor.close()
+        conn.close()
+
+        if flight:
+            return render_template('flight_status.html', flight=flight)
+        else:
+            return render_template('flight_status.html', error='No flight found.')
+    else:
+        return render_template('flight_status.html')
+    
+@app.route('/view_flight_customers', methods=['GET'])
+def view_flight_customers():
+    if 'user_id' in session and session['user_type'] == 'staff':
+        flight_no = request.args.get('flight_no')
+        departure_date = request.args.get('departure_date')
+        departure_time = request.args.get('departure_time')
+        airline_name = request.args.get('airline_name')
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        query = """
+            SELECT c.email_address, c.first_name, c.last_name
+            FROM Customer c
+            JOIN Buy b ON c.email_address = b.email_address
+            JOIN Ticket t ON b.ticket_ID = t.ticket_ID
+            WHERE t.flight_no = %s AND t.departure_date = %s AND t.departure_time = %s AND t.airline_name = %s
+        """
+        values = (flight_no, departure_date, departure_time, airline_name)
+        cursor.execute(query, values)
+        customers = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        return render_template('flight_customers.html', customers=customers)
+    else:
+        return redirect(url_for('login'))
+
+@app.route('/create_flight', methods=['GET', 'POST'])
+def create_flight():
+    if 'user_id' in session and session['user_type'] == 'staff':
+        if request.method == 'POST':
+            flight_no = request.form['flight_no']
+            departure_date = request.form['departure_date']
+            departure_time = request.form['departure_time']
+            airline_name = request.form['airline_name']
+            arrival_date = request.form['arrival_date']
+            arrival_time = request.form['arrival_time']
+            ticket_base_price = request.form['ticket_base_price']
+            status = request.form['status']
+            airplane_id = request.form['airplane_id']
+            departure_airport_code = request.form['departure_airport_code']
+            arrival_airport_code = request.form['arrival_airport_code']
+
+            conn = get_db_connection()
+            cursor = conn.cursor()
+
+            # Check if the airline exists
+            query = "SELECT COUNT(*) FROM Airline WHERE airline_name = %s"
+            cursor.execute(query, (airline_name,))
+            airline_exists = cursor.fetchone()[0]
+
+            if airline_exists:
+                # Check if the airplane exists and belongs to the airline
+                query = "SELECT COUNT(*) FROM Airplane WHERE airplane_id = %s AND airline_name = %s"
+                cursor.execute(query, (airplane_id, airline_name))
+                airplane_exists = cursor.fetchone()[0]
+
+                if airplane_exists:
+                    # Insert the new flight into the database
+                    query = """
+                        INSERT INTO Flight (flight_no, departure_date, departure_time, airline_name, arrival_date, arrival_time, ticket_base_price, status, airplane_id, departure_airport_code, arrival_airport_code)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """
+                    values = (flight_no, departure_date, departure_time, airline_name, arrival_date, arrival_time, ticket_base_price, status, airplane_id, departure_airport_code, arrival_airport_code)
+                    cursor.execute(query, values)
+                    conn.commit()
+
+                    cursor.close()
+                    conn.close()
+
+                    return redirect(url_for('staff_dashboard'))
+                else:
+                    return render_template('create_flight.html', error='Invalid airplane ID')
+            else:
+                return render_template('create_flight.html', error='Invalid airline name')
+        return render_template('create_flight.html')
+    return redirect(url_for('login'))
+
+@app.route('/change_flight_status', methods=['POST'])
+def change_flight_status():
+    if 'user_id' in session and session['user_type'] == 'staff':
+        flight_no = request.form['flight_no']
+        departure_date = request.form['departure_date']
+        departure_time = request.form['departure_time']
+        airline_name = request.form['airline_name']
+        new_status = request.form['new_status']
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Update the flight status in the database
+        query = """
+            UPDATE Flight
+            SET status = %s
+            WHERE flight_no = %s AND departure_date = %s AND departure_time = %s AND airline_name = %s
+        """
+        values = (new_status, flight_no, departure_date, departure_time, airline_name)
+        cursor.execute(query, values)
+        conn.commit()
+
+        cursor.close()
+        conn.close()
+
+        return redirect(url_for('staff_dashboard'))
+    return redirect(url_for('login'))
+
+
+@app.route('/add_airplane', methods=['GET', 'POST'])
+def add_airplane():
+    if 'user_id' in session and session['user_type'] == 'staff':
+        if request.method == 'POST':
+            airline_name = request.form['airline_name']
+            num_seats = request.form['num_seats']
+            manufacturer = request.form['manufacturer']
+            model_num = request.form['model_num']
+            manufacture_date = request.form['manufacture_date']
+            age = request.form['age']
+
+            conn = get_db_connection()
+            cursor = conn.cursor()
+
+            # Check if the airline exists
+            query = "SELECT COUNT(*) FROM Airline WHERE airline_name = %s"
+            cursor.execute(query, (airline_name,))
+            airline_exists = cursor.fetchone()[0]
+
+            if airline_exists:
+                # Insert the new airplane into the database
+                query = """
+                    INSERT INTO Airplane (airline_name, num_seats, manufacturer, model_num, manufacture_date, age)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                """
+                values = (airline_name, num_seats, manufacturer, model_num, manufacture_date, age)
+                cursor.execute(query, values)
+                conn.commit()
+
+                cursor.close()
+                conn.close()
+
+                return redirect(url_for('staff_dashboard'))
+            else:
+                return render_template('add_airplane.html', error='Invalid airline name')
+        return render_template('add_airplane.html')
+    return redirect(url_for('login'))
+
+
+@app.route('/add_airport', methods=['GET', 'POST'])
+def add_airport():
+    if 'user_id' in session and session['user_type'] == 'staff':
+        if request.method == 'POST':
+            airport_code = request.form['airport_code']
+            airport_name = request.form['airport_name']
+            city = request.form['city']
+            country = request.form['country']
+            num_terminals = request.form['num_terminals']
+            airport_type = request.form['airport_type']
+
+            conn = get_db_connection()
+            cursor = conn.cursor()
+
+            # Insert the new airport into the database
+            query = """
+                INSERT INTO Airport (airport_code, airport_name, city, country, num_terminals, airport_type)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """
+            values = (airport_code, airport_name, city, country, num_terminals, airport_type)
+            cursor.execute(query, values)
+            conn.commit()
+
+            cursor.close()
+            conn.close()
+
+            return redirect(url_for('staff_dashboard'))
+        return render_template('add_airport.html')
+    return redirect(url_for('login'))
+
+
+@app.route('/view_flight_ratings', methods=['GET'])
+def view_flight_ratings():
+    if 'user_id' in session and session['user_type'] == 'staff':
+        flight_no = request.args.get('flight_no')
+        departure_date = request.args.get('departure_date')
+        departure_time = request.args.get('departure_time')
+        airline_name = request.args.get('airline_name')
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Retrieve flight ratings and comments from the database
+        query = """
+            SELECT rate, comment
+            FROM Review
+            WHERE flight_no = %s AND departure_date = %s AND departure_time = %s AND airline_name = %s
+        """
+        values = (flight_no, departure_date, departure_time, airline_name)
+        cursor.execute(query, values)
+        ratings = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        return render_template('flight_ratings.html', ratings=ratings)
+    return redirect(url_for('login'))
+
+
+@app.route('/schedule_maintenance', methods=['GET', 'POST'])
+def schedule_maintenance():
+    if 'user_id' in session and session['user_type'] == 'staff':
+        if request.method == 'POST':
+            airplane_id = request.form['airplane_id']
+            start_date = request.form['start_date']
+            start_time = request.form['start_time']
+            end_date = request.form['end_date']
+            end_time = request.form['end_time']
+
+            conn = get_db_connection()
+            cursor = conn.cursor()
+
+            # Check if the airplane exists
+            query = "SELECT COUNT(*) FROM Airplane WHERE airplane_id = %s"
+            cursor.execute(query, (airplane_id,))
+            airplane_exists = cursor.fetchone()[0]
+
+            if airplane_exists:
+                # Insert the maintenance schedule into the database
+                query = """
+                    INSERT INTO Maintenance (airplane_id, start_date, start_time, end_date, end_time)
+                    VALUES (%s, %s, %s, %s, %s)
+                """
+                values = (airplane_id, start_date, start_time, end_date, end_time)
+                cursor.execute(query, values)
+                conn.commit()
+
+                cursor.close()
+                conn.close()
+
+                return redirect(url_for('staff_dashboard'))
+            else:
+                return render_template('schedule_maintenance.html', error='Invalid airplane ID')
+        return render_template('schedule_maintenance.html')
+    return redirect(url_for('login'))
+
+
+@app.route('/view_frequent_customers', methods=['GET'])
+def view_frequent_customers():
+    if 'user_id' in session and session['user_type'] == 'staff':
+        airline_name = session['user_id']  # Assuming airline staff username is the airline name
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Retrieve the most frequent customers within the last year
+        query = """
+            SELECT c.email_address, c.first_name, c.last_name, COUNT(*) AS flight_count
+            FROM Customer c
+            JOIN Buy b ON c.email_address = b.email_address
+            JOIN Ticket t ON b.ticket_ID = t.ticket_ID
+            JOIN Flight f ON t.flight_no = f.flight_no AND t.departure_date = f.departure_date AND t.departure_time = f.departure_time AND t.airline_name = f.airline_name
+            WHERE f.airline_name = %s AND b.buy_date >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)
+            GROUP BY c.email_address, c.first_name, c.last_name
+            ORDER BY flight_count DESC
+            LIMIT 1
+        """
+        cursor.execute(query, (airline_name,))
+        frequent_customers = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        return render_template('frequent_customers.html', customers=frequent_customers)
+    return redirect(url_for('login'))
+
+@app.route('/view_earned_revenue', methods=['GET'])
+def view_earned_revenue():
+    if 'user_id' in session and session['user_type'] == 'staff':
+        airline_name = session['user_id']  # Assuming airline staff username is the airline name
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Retrieve the total revenue earned from ticket sales in the last month
+        query = """
+            SELECT SUM(t.ticket_price) AS total_revenue_month
+            FROM Ticket t
+            JOIN Flight f ON t.flight_no = f.flight_no AND t.departure_date = f.departure_date AND t.departure_time = f.departure_time AND t.airline_name = f.airline_name
+            JOIN Buy b ON t.ticket_ID = b.ticket_ID
+            WHERE f.airline_name = %s AND b.buy_date >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
+        """
+        cursor.execute(query, (airline_name,))
+        total_revenue_month = cursor.fetchone()[0]
+
+        # Retrieve the total revenue earned from ticket sales in the last year
+        query = """
+            SELECT SUM(t.ticket_price) AS total_revenue_year
+            FROM Ticket t
+            JOIN Flight f ON t.flight_no = f.flight_no AND t.departure_date = f.departure_date AND t.departure_time = f.departure_time AND t.airline_name = f.airline_name
+            JOIN Buy b ON t.ticket_ID = b.ticket_ID
+            WHERE f.airline_name = %s AND b.buy_date >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)
+        """
+        cursor.execute(query, (airline_name,))
+        total_revenue_year = cursor.fetchone()[0]
+
+        cursor.close()
+        conn.close()
+
+        return render_template('earned_revenue.html', revenue_month=total_revenue_month, revenue_year=total_revenue_year)
+    return redirect(url_for('login'))
+
 
 @app.route('/logout')
 def logout():

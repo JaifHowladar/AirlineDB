@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Flight</title>
+</head>
+<body>
+    <h1>Create Flight</h1>
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+    <form method="POST" action="{{ url_for('create_flight') }}">
+        <label for="flight_no">Flight Number:</label>
+        <input type="text" id="flight_no" name="flight_no" required><br>
+        <label for="departure_date">Departure Date:</label>
+        <input type="date" id="departure_date" name="departure_date" required><br>
+        <label for="departure_time">Departure Time:</label>
+        <input type="time" id="departure_time" name="departure_time" required><br>
+        <label for="airline_name">Airline Name:</label>
+        <input type="text" id="airline_name" name="airline_name" required><br>
+        <label for="arrival_date">Arrival Date:</label>
+        <input type="date" id="arrival_date" name="arrival_date" required><br>
+        <label for="arrival_time">Arrival Time:</label>
+        <input type="time" id="arrival_time" name="arrival_time" required><br>
+        <label for="ticket_base_price">Ticket Base Price:</label>
+        <input type="number" id="ticket_base_price" name="ticket_base_price" step="0.01" required><br>
+        <label for="status">Status:</label>
+        <input type="text" id="status" name="status" required><br>
+        <label for="airplane_id">Airplane ID:</label>
+        <input type="number" id="airplane_id" name="airplane_id" required><br>
+        <label for="departure_airport_code">Departure Airport Code:</label>
+        <input type="text" id="departure_airport_code" name="departure_airport_code" required><br>
+        <label for="arrival_airport_code">Arrival Airport Code:</label>
+        <input type="text" id="arrival_airport_code" name="arrival_airport_code" required><br>
+        <input type="submit" value="Create Flight">
+    </form>
+</body>
+</html>

@@ -1,31 +1,62 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Staff Dashboard</title>
+    <title>Airline Staff Dashboard</title>
 </head>
 <body>
     <h1>Welcome, {{ user_id }}!</h1>
-    <h2>Flights Operated by Your Airline</h2>
-    <table>
-        <thead>
+    <h2>Flights</h2>
+    {% if flights %}
+        <table>
             <tr>
-                <th>Flight No.</th>
+                <th>Flight Number</th>
                 <th>Departure Date</th>
                 <th>Departure Time</th>
-                <th>Airline</th>
+                <th>Airline Name</th>
+                <th>Status</th>
+                <th>Action</th>
             </tr>
-        </thead>
-        <tbody>
             {% for flight in flights %}
-            <tr>
-                <td>{{ flight[0] }}</td>
-                <td>{{ flight[1] }}</td>
-                <td>{{ flight[2] }}</td>
-                <td>{{ flight[3] }}</td>
-            </tr>
+                <tr>
+                    <td>{{ flight[0] }}</td>
+                    <td>{{ flight[1] }}</td>
+                    <td>{{ flight[2] }}</td>
+                    <td>{{ flight[3] }}</td>
+                    <td>{{ flight[7] }}</td>
+                    <td>
+                        <a href="{{ url_for('view_flight_customers', flight_no=flight[0], departure_date=flight[1], departure_time=flight[2], airline_name=flight[3]) }}">View Customers</a>
+                        <form method="POST" action="{{ url_for('change_flight_status') }}">
+                            <input type="hidden" name="flight_no" value="{{ flight[0] }}">
+                            <input type="hidden" name="departure_date" value="{{ flight[1] }}">
+                            <input type="hidden" name="departure_time" value="{{ flight[2] }}">
+                            <input type="hidden" name="airline_name" value="{{ flight[3] }}">
+                            <select name="new_status">
+                                <option value="on-time">On-time</option>
+                                <option value="delayed">Delayed</option>
+                            </select>
+                            <input type="submit" value="Change Status">
+                        </form>
+                        <a href="{{ url_for('view_flight_ratings', flight_no=flight[0], departure_date=flight[1], departure_time=flight[2], airline_name=flight[3]) }}">View Ratings</a>
+                    </td>
+                </tr>
             {% endfor %}
-        </tbody>
-    </table>
-    <p><a href="{{ url_for('logout') }}">Logout</a></p>
+        </table>
+    {% else %}
+        <p>No flights found.</p>
+    {% endif %}
+    <br>
+    <a href="{{ url_for('create_flight') }}">Create New Flight</a>
+    <br>
+    <a href="{{ url_for('add_airplane') }}">Add Airplane</a>
+    <br>
+    <a href="{{ url_for('add_airport') }}">Add Airport</a>
+    <br>
+    <a href="{{ url_for('schedule_maintenance') }}">Schedule Maintenance</a>
+    <br>
+    <a href="{{ url_for('view_frequent_customers') }}">View Frequent Customers</a>
+    <br>
+    <a href="{{ url_for('view_earned_revenue') }}">View Earned Revenue</a>
+    <br>
+    <a href="{{ url_for('logout') }}">Logout</a>
 </body>
 </html>

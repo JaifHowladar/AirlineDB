@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Frequent Customers</title>
+</head>
+<body>
+    <h1>Frequent Customers</h1>
+    {% if customers %}
+        <table>
+            <tr>
+                <th>Email Address</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Flight Count</th>
+            </tr>
+            {% for customer in customers %}
+                <tr>
+                    <td>{{ customer[0] }}</td>
+                    <td>{{ customer[1] }}</td>
+                    <td>{{ customer[2] }}</td>
+                    <td>{{ customer[3] }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No frequent customers found.</p>
+    {% endif %}
+    <br>
+    <a href="{{ url_for('staff_dashboard') }}">Back to Dashboard</a>
+</body>
+</html>

@@ -2,66 +2,148 @@
 <html>
 <head>
     <title>Register</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        form {
+            margin-top: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #666;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="date"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+        }
+
+        input[type="submit"] {
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        .error {
+            color: red;
+            margin-bottom: 10px;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .login-link a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+    </style>
 </head>
 <body>
-    <h1>Register</h1>
-    {% if error %}
-        <p style="color: red;">{{ error }}</p>
-    {% endif %}
-    <form method="POST" action="{{ url_for('register') }}">
-        <label for="user_type">User Type:</label>
-        <select id="user_type" name="user_type" required>
-            <option value="customer">Customer</option>
-            <option value="staff">Airline Staff</option>
-        </select><br>
-        <div id="customer_fields">
-            <label for="customer_email">Email:</label>
-            <input type="email" id="customer_email" name="customer_email" required><br>
-            <label for="customer_password">Password:</label>
-            <input type="password" id="customer_password" name="customer_password" required><br>
-            <label for="customer_first_name">First Name:</label>
-            <input type="text" id="customer_first_name" name="customer_first_name" required><br>
-            <label for="customer_last_name">Last Name:</label>
-            <input type="text" id="customer_last_name" name="customer_last_name" required><br>
-            <label for="customer_building_no">Building Number:</label>
-            <input type="text" id="customer_building_no" name="customer_building_no" required><br>
-            <label for="customer_street_name">Street Name:</label>
-            <input type="text" id="customer_street_name" name="customer_street_name" required><br>
-            <label for="customer_apartment_num">Apartment Number:</label>
-            <input type="text" id="customer_apartment_num" name="customer_apartment_num"><br>
-            <label for="customer_city">City:</label>
-            <input type="text" id="customer_city" name="customer_city" required><br>
-            <label for="customer_state">State:</label>
-            <input type="text" id="customer_state" name="customer_state" required><br>
-            <label for="customer_zip">ZIP Code:</label>
-            <input type="text" id="customer_zip" name="customer_zip" required><br>
-            <label for="customer_passport_num">Passport Number:</label>
-            <input type="text" id="customer_passport_num" name="customer_passport_num" required><br>
-            <label for="customer_passport_exp">Passport Expiration Date:</label>
-            <input type="date" id="customer_passport_exp" name="customer_passport_exp" required><br>
-            <label for="customer_passport_country">Passport Country:</label>
-            <input type="text" id="customer_passport_country" name="customer_passport_country" required><br>
-            <label for="customer_date_of_birth">Date of Birth:</label>
-            <input type="date" id="customer_date_of_birth" name="customer_date_of_birth" required><br>
+    <div class="container">
+        <h1>Register</h1>
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+        <form method="POST" action="{{ url_for('register') }}">
+            <label for="user_type">User Type:</label>
+            <select id="user_type" name="user_type" required>
+                <option value="customer">Customer</option>
+                <option value="staff">Airline Staff</option>
+            </select><br>
+            <div id="customer_fields">
+                <label for="customer_email">Email:</label>
+                <input type="email" id="customer_email" name="customer_email" required><br>
+                <label for="customer_password">Password:</label>
+                <input type="password" id="customer_password" name="customer_password" required><br>
+                <label for="customer_first_name">First Name:</label>
+                <input type="text" id="customer_first_name" name="customer_first_name" required><br>
+                <label for="customer_last_name">Last Name:</label>
+                <input type="text" id="customer_last_name" name="customer_last_name" required><br>
+                <label for="customer_building_no">Building Number:</label>
+                <input type="text" id="customer_building_no" name="customer_building_no" required><br>
+                <label for="customer_street_name">Street Name:</label>
+                <input type="text" id="customer_street_name" name="customer_street_name" required><br>
+                <label for="customer_apartment_num">Apartment Number:</label>
+                <input type="text" id="customer_apartment_num" name="customer_apartment_num"><br>
+                <label for="customer_city">City:</label>
+                <input type="text" id="customer_city" name="customer_city" required><br>
+                <label for="customer_state">State:</label>
+                <input type="text" id="customer_state" name="customer_state" required><br>
+                <label for="customer_zip">ZIP Code:</label>
+                <input type="text" id="customer_zip" name="customer_zip" required><br>
+                <label for="customer_passport_num">Passport Number:</label>
+                <input type="text" id="customer_passport_num" name="customer_passport_num" required><br>
+                <label for="customer_passport_exp">Passport Expiration Date:</label>
+                <input type="date" id="customer_passport_exp" name="customer_passport_exp" required><br>
+                <label for="customer_passport_country">Passport Country:</label>
+                <input type="text" id="customer_passport_country" name="customer_passport_country" required><br>
+                <label for="customer_date_of_birth">Date of Birth:</label>
+                <input type="date" id="customer_date_of_birth" name="customer_date_of_birth" required><br>
+            </div>
+            <div id="staff_fields" style="display: none;">
+                <label for="staff_username">Username:</label>
+                <input type="text" id="staff_username" name="staff_username" required><br>
+                <label for="staff_password">Password:</label>
+                <input type="password" id="staff_password" name="staff_password" required><br>
+                <label for="staff_first_name">First Name:</label>
+                <input type="text" id="staff_first_name" name="staff_first_name" required><br>
+                <label for="staff_last_name">Last Name:</label>
+                <input type="text" id="staff_last_name" name="staff_last_name" required><br>
+                <label for="staff_airline_name">Airline Name:</label>
+                <input type="text" id="staff_airline_name" name="staff_airline_name" required><br>
+                <label for="staff_date_of_birth">Date of Birth:</label>
+                <input type="date" id="staff_date_of_birth" name="staff_date_of_birth" required><br>
+                <label for="staff_email">Email:</label>
+                <input type="email" id="staff_email" name="staff_email" required><br>
+            </div>
+            <input type="submit" value="Register">
+        </form>
+        <div class="login-link">
+            Already have an account? <a href="{{ url_for('login') }}">Login</a>
         </div>
-        <div id="staff_fields" style="display: none;">
-            <label for="staff_username">Username:</label>
-            <input type="text" id="staff_username" name="staff_username" required><br>
-            <label for="staff_password">Password:</label>
-            <input type="password" id="staff_password" name="staff_password" required><br>
-            <label for="staff_first_name">First Name:</label>
-            <input type="text" id="staff_first_name" name="staff_first_name" required><br>
-            <label for="staff_last_name">Last Name:</label>
-            <input type="text" id="staff_last_name" name="staff_last_name" required><br>
-            <label for="staff_airline_name">Airline Name:</label>
-            <input type="text" id="staff_airline_name" name="staff_airline_name" required><br>
-            <label for="staff_date_of_birth">Date of Birth:</label>
-            <input type="date" id="staff_date_of_birth" name="staff_date_of_birth" required><br>
-            <label for="staff_email">Email:</label>
-            <input type="email" id="staff_email" name="staff_email" required><br>
-        </div>
-        <input type="submit" value="Register">
-    </form>
+    </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const userTypeSelect = document.getElementById('user_type');

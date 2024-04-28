@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Customer Dashboard</title>
+    <title>Search Flights</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -10,24 +10,8 @@
             padding: 20px;
         }
 
-        h1, h2 {
+        h1 {
             color: #333;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-
-        th, td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #ccc;
-        }
-
-        th {
-            background-color: #f2f2f2;
         }
 
         form {
@@ -57,51 +41,30 @@
             cursor: pointer;
         }
 
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ccc;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
         a {
             color: #4CAF50;
             text-decoration: none;
         }
-
-        .logout-link {
-            margin-top: 20px;
-        }
     </style>
 </head>
 <body>
-    <h1>Welcome, {{ user_id }}!</h1>
-    <h2>Available Flights</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Flight No.</th>
-                <th>Departure Date</th>
-                <th>Departure Time</th>
-                <th>Airline</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for flight in flights %}
-            <tr>
-                <td>{{ flight[0] }}</td>
-                <td>{{ flight[1] }}</td>
-                <td>{{ flight[2] }}</td>
-                <td>{{ flight[3] }}</td>
-                <td>
-                    <form method="POST" action="{{ url_for('book_flight') }}">
-                        <input type="hidden" name="flight_no" value="{{ flight[0] }}">
-                        <input type="hidden" name="departure_date" value="{{ flight[1] }}">
-                        <input type="hidden" name="departure_time" value="{{ flight[2] }}">
-                        <input type="hidden" name="airline_name" value="{{ flight[3] }}">
-                        <input type="submit" value="Book">
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <h2>Search Flights</h2>
+    <h1>Search Flights</h1>
     <form method="POST" action="{{ url_for('search_flights') }}">
         <label for="source_city">Source City:</label>
         <input type="text" id="source_city" name="source_city" required><br>
@@ -121,16 +84,41 @@
         <input type="submit" value="Search">
     </form>
 
-    <h2>Track Spending</h2>
-    <form method="POST" action="{{ url_for('track_spending') }}">
-        <label for="start_date">Start Date:</label>
-        <input type="date" id="start_date" name="start_date"><br>
-        <label for="end_date">End Date:</label>
-        <input type="date" id="end_date" name="end_date"><br>
-        <input type="submit" value="Track">
-    </form>
+    {% if flights %}
+        <h2>Search Results</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Flight No.</th>
+                    <th>Departure Date</th>
+                    <th>Departure Time</th>
+                    <th>Airline</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for flight in flights %}
+                    <tr>
+                        <td>{{ flight[0] }}</td>
+                        <td>{{ flight[1] }}</td>
+                        <td>{{ flight[2] }}</td>
+                        <td>{{ flight[3] }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('book_flight') }}">
+                                <input type="hidden" name="flight_no" value="{{ flight[0] }}">
+                                <input type="hidden" name="departure_date" value="{{ flight[1] }}">
+                                <input type="hidden" name="departure_time" value="{{ flight[2] }}">
+                                <input type="hidden" name="airline_name" value="{{ flight[3] }}">
+                                <input type="submit" value="Book">
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
 
-    <p class="logout-link"><a href="{{ url_for('logout') }}">Logout</a></p>
+    <p><a href="{{ url_for('dashboard') }}">Back to Dashboard</a></p>
 
     <script>
         const tripTypeSelect = document.getElementById('trip_type');

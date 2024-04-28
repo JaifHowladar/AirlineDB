@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Flight Ratings</title>
+</head>
+<body>
+    <h1>Flight Ratings</h1>
+    {% if ratings %}
+        <table>
+            <tr>
+                <th>Rating</th>
+                <th>Comment</th>
+            </tr>
+            {% for rating in ratings %}
+                <tr>
+                    <td>{{ rating[0] }}</td>
+                    <td>{{ rating[1] }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No ratings found for this flight.</p>
+    {% endif %}
+    <br>
+    <a href="{{ url_for('staff_dashboard') }}">Back to Dashboard</a>
+</body>
+</html>
