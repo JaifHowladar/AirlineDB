@@ -1,0 +1,153 @@
+CREATE TABLE Airline (
+    airline_name VARCHAR(50) PRIMARY KEY
+);
+
+CREATE TABLE AirlineStaff (
+    username VARCHAR(50) PRIMARY KEY,
+    password VARCHAR(50),
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    airline_name VARCHAR(50),
+    dob DATE,
+    FOREIGN KEY (airline_name) REFERENCES Airline(airline_name)
+);
+
+CREATE TABLE StaffPhoneNumber (
+    username VARCHAR(50),
+    staff_number VARCHAR(20),
+    PRIMARY KEY (username, staff_number),
+    FOREIGN KEY (username) REFERENCES AirlineStaff(username)
+);
+
+
+
+CREATE TABLE Email (
+    username VARCHAR(50),
+    email_address VARCHAR(255),
+    PRIMARY KEY (username, email_address),
+    FOREIGN KEY (username) REFERENCES AirlineStaff(username)
+);
+
+
+
+CREATE TABLE Airport (
+    airport_code VARCHAR(10) PRIMARY KEY,
+    airport_name VARCHAR(50),
+    city VARCHAR(100),
+    country VARCHAR(100),
+    num_terminals INT,
+    airport_type VARCHAR(50)
+);
+
+CREATE TABLE Airplane (
+    airplane_id INT AUTO_INCREMENT PRIMARY KEY,
+    airline_name VARCHAR(50),
+    num_seats INT,
+    manufacturer VARCHAR(255),
+    model_num VARCHAR(100),
+    manufacture_date DATE,
+    age INT,
+    FOREIGN KEY (airline_name) REFERENCES Airline(airline_name)
+);
+
+
+
+CREATE TABLE Maintenance (
+    maintenance_id INT AUTO_INCREMENT PRIMARY KEY,
+    airplane_id INT,
+    start_date DATE,
+    start_time TIME,
+    end_date DATE,
+    end_time TIME,
+    FOREIGN KEY (airplane_id) REFERENCES Airplane(airplane_id)
+);
+
+
+CREATE TABLE Flight (
+    flight_no VARCHAR(20),
+    departure_date DATE,
+    departure_time TIME,
+    airline_name VARCHAR(50),
+    arrival_date DATE,
+    arrival_time TIME,
+    ticket_base_price DECIMAL(10, 2),
+    status VARCHAR(50),
+    airplane_id INT,
+    departure_airport_code VARCHAR(10),
+    arrival_airport_code VARCHAR(10),
+    PRIMARY KEY (flight_no, departure_date, departure_time, airline_name),
+    FOREIGN KEY (airline_name) REFERENCES Airline(airline_name),
+    FOREIGN KEY (airplane_id) REFERENCES Airplane(airplane_id),
+    FOREIGN KEY (departure_airport_code) REFERENCES Airport(airport_code),
+    FOREIGN KEY (arrival_airport_code) REFERENCES Airport(airport_code)
+);
+
+
+
+CREATE TABLE Customer (
+    email_address VARCHAR(255) PRIMARY KEY,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    password VARCHAR(50),
+    building_no VARCHAR(20),
+    street_name VARCHAR(50),
+    apartment_num VARCHAR(20),
+    city VARCHAR(50),
+    state VARCHAR(50),
+    zip VARCHAR(20),
+    passport_num VARCHAR(20),
+    passport_exp DATE,
+    passport_country VARCHAR(50),
+    date_of_birth DATE
+);
+
+CREATE TABLE CustomerPhoneNumber (
+    email_address VARCHAR(255),
+    customer_number VARCHAR(20),
+    PRIMARY KEY (email_address, customer_number),
+    FOREIGN KEY (email_address) REFERENCES Customer(email_address)
+);
+
+
+CREATE TABLE Review (
+    flight_no VARCHAR(20),
+    departure_date DATE,
+    departure_time TIME,
+    airline_name VARCHAR(50), 
+    email_address VARCHAR(255),
+    rate INT,
+    comment TEXT,
+    PRIMARY KEY (flight_no, departure_date, departure_time, airline_name, email_address),
+    FOREIGN KEY (flight_no, departure_date, departure_time, airline_name) REFERENCES Flight(flight_no, departure_date, departure_time, airline_name),
+    FOREIGN KEY (email_address) REFERENCES Customer(email_address)
+);
+
+
+CREATE TABLE Ticket (
+    ticket_ID INT AUTO_INCREMENT PRIMARY KEY,
+    flight_no VARCHAR(20),
+    departure_date DATE,
+    departure_time TIME,
+    airline_name VARCHAR(50),
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    date_of_birth DATE,
+    ticket_price DECIMAL(10, 2),
+    FOREIGN KEY (flight_no, departure_date, departure_time, airline_name) 
+    REFERENCES Flight(flight_no, departure_date, departure_time, airline_name)
+);
+
+
+CREATE TABLE Buy (
+    ticket_ID INT,
+    email_address VARCHAR(255),
+    exp_date DATE,
+    card_name VARCHAR(100),
+    card_num VARCHAR(20),
+    buy_date DATE,
+    buy_time TIME,
+    payment_type VARCHAR(50),
+    PRIMARY KEY (ticket_ID, email_address),
+    FOREIGN KEY (ticket_ID) REFERENCES Ticket(ticket_ID),
+    FOREIGN KEY (email_address) REFERENCES Customer(email_address)
+); 

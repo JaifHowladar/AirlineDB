@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Customer Dashboard</title>
+</head>
+<body>
+    <h1>Welcome, {{ user_id }}!</h1>
+    <h2>Available Flights</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Flight No.</th>
+                <th>Departure Date</th>
+                <th>Departure Time</th>
+                <th>Airline</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for flight in flights %}
+            <tr>
+                <td>{{ flight[0] }}</td>
+                <td>{{ flight[1] }}</td>
+                <td>{{ flight[2] }}</td>
+                <td>{{ flight[3] }}</td>
+                <td>
+                    <form method="POST" action="{{ url_for('book_flight') }}">
+                        <input type="hidden" name="flight_no" value="{{ flight[0] }}">
+                        <input type="hidden" name="departure_date" value="{{ flight[1] }}">
+                        <input type="hidden" name="departure_time" value="{{ flight[2] }}">
+                        <input type="hidden" name="airline_name" value="{{ flight[3] }}">
+                        <input type="submit" value="Book">
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <h2>Search Flights</h2>
+    <form method="POST" action="{{ url_for('search_flights') }}">
+        <label for="source_city">Source City:</label>
+        <input type="text" id="source_city" name="source_city" required><br>
+        <label for="destination_city">Destination City:</label>
+        <input type="text" id="destination_city" name="destination_city" required><br>
+        <label for="departure_date">Departure Date:</label>
+        <input type="date" id="departure_date" name="departure_date" required><br>
+        <label for="trip_type">Trip Type:</label>
+        <select id="trip_type" name="trip_type" required>
+            <option value="one_way">One-way</option>
+            <option value="round_trip">Round Trip</option>
+        </select><br>
+        <div id="return_date_field" style="display: none;">
+            <label for="return_date">Return Date:</label>
+            <input type="date" id="return_date" name="return_date"><br>
+        </div>
+        <input type="submit" value="Search">
+    </form>
+    <script>
+        const tripTypeSelect = document.getElementById('trip_type');
+        const returnDateField = document.getElementById('return_date_field');
+
+        tripTypeSelect.addEventListener('change', function() {
+            if (this.value === 'round_trip') {
+                returnDateField.style.display = 'block';
+            } else {
+                returnDateField.style.display = 'none';
+            }
+        });
+    </script>
+    <h2>Track Spending</h2>
+    <form method="POST" action="{{ url_for('track_spending') }}">
+        <label for="start_date">Start Date:</label>
+        <input type="date" id="start_date" name="start_date"><br>
+        <label for="end_date">End Date:</label>
+        <input type="date" id="end_date" name="end_date"><br>
+        <input type="submit" value="Track">
+    </form>
+    <p><a href="{{ url_for('logout') }}">Logout</a></p>
+</body>
+</html>

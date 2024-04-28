@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Registration Successful</title>
+</head>
+<body>
+    <h1>Registration Successful</h1>
+    {% if user_type == 'customer' %}
+        <p>Congratulations! You have successfully registered as a customer.</p>
+    {% elif user_type == 'staff' %}
+        <p>Congratulations! You have successfully registered as an airline staff member.</p>
+    {% endif %}
+    <p>You can now <a href="{{ url_for('login') }}">log in</a> to access your account.</p>
+</body>
+</html>

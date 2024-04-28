@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Staff Dashboard</title>
+</head>
+<body>
+    <h1>Welcome, {{ user_id }}!</h1>
+    <h2>Flights Operated by Your Airline</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Flight No.</th>
+                <th>Departure Date</th>
+                <th>Departure Time</th>
+                <th>Airline</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for flight in flights %}
+            <tr>
+                <td>{{ flight[0] }}</td>
+                <td>{{ flight[1] }}</td>
+                <td>{{ flight[2] }}</td>
+                <td>{{ flight[3] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p><a href="{{ url_for('logout') }}">Logout</a></p>
+</body>
+</html>
