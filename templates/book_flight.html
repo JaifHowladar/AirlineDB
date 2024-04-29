@@ -6,14 +6,10 @@
 <body>
     <h1>Book Flight</h1>
     <form method="POST" action="{{ url_for('book_flight') }}">
-        <label for="flight_no">Flight Number:</label>
-        <input type="text" id="flight_no" name="flight_no" required><br>
-        <label for="departure_date">Departure Date:</label>
-        <input type="date" id="departure_date" name="departure_date" required><br>
-        <label for="departure_time">Departure Time:</label>
-        <input type="time" id="departure_time" name="departure_time" required><br>
-        <label for="airline_name">Airline Name:</label>
-        <input type="text" id="airline_name" name="airline_name" required><br>
+        <input type="hidden" name="flight_no" value="{{ flight.flight_no }}">
+        <input type="hidden" name="departure_date" value="{{ flight.departure_date }}">
+        <input type="hidden" name="departure_time" value="{{ flight.departure_time }}">
+        <input type="hidden" name="airline_name" value="{{ flight.airline_name }}">
         <label for="first_name">First Name:</label>
         <input type="text" id="first_name" name="first_name" required><br>
         <label for="last_name">Last Name:</label>

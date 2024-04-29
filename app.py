@@ -280,24 +280,61 @@ def book_flight():
         conn = get_db_connection()
         cursor = conn.cursor()
 
+        # Check if the customer already has a ticket for the same flight
+        query = "SELECT COUNT(*) FROM Ticket WHERE flight_no = %s AND departure_date = %s AND departure_time = %s AND airline_name = %s AND first_name = %s AND last_name = %s AND date_of_birth = %s"
+        values = (flight_no, departure_date, departure_time, airline_name, first_name, last_name, dob)
+        cursor.execute(query, values)
+        ticket_exists = cursor.fetchone()[0]
+
+        if ticket_exists:
+            cursor.close()
+            conn.close()
+            return "You have already booked a ticket for this flight."
+
+        # Insert the ticket into the database
         query = "INSERT INTO Ticket (flight_no, departure_date, departure_time, airline_name, first_name, last_name, date_of_birth) VALUES (%s, %s, %s, %s, %s, %s, %s)"
         values = (flight_no, departure_date, departure_time, airline_name, first_name, last_name, dob)
         cursor.execute(query, values)
-
         ticket_id = cursor.lastrowid
 
-        query = "INSERT INTO Buy (ticket_ID, email_address, buy_date, buy_time) VALUES (%s, %s, %s, %s)"
-        values = (ticket_id, user_id, datetime.now().date(), datetime.now().time())
-        cursor.execute(query, values)
-
         conn.commit()
-
         cursor.close()
         conn.close()
 
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('payment', ticket_id=ticket_id, email_address=user_id))
     else:
         return redirect(url_for('login'))
+
+@app.route('/payment')
+def payment():
+    ticket_id = request.args.get('ticket_id')
+    email_address = request.args.get('email_address')
+    return render_template('payment.html', ticket_id=ticket_id, email_address=email_address)
+
+@app.route('/process_payment', methods=['POST'])
+def process_payment():
+    ticket_id = request.form['ticket_id']
+    email_address = request.form['email_address']
+    exp_date = request.form['exp_date']
+    card_name = request.form['card_name']
+    card_num = request.form['card_num']
+    payment_type = request.form['payment_type']
+    buy_date = datetime.now().date()
+    buy_time = datetime.now().time()
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Insert the payment record into the Buy table
+    query = "INSERT INTO Buy (ticket_ID, email_address, exp_date, card_name, card_num, buy_date, buy_time, payment_type) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+    values = (ticket_id, email_address, exp_date, card_name, card_num, buy_date, buy_time, payment_type)
+    cursor.execute(query, values)
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return "Flight booked successfully!"
 
 @app.route('/cancel_flight', methods=['POST'])
 def cancel_flight():
