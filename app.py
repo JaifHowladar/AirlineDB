@@ -1,9 +1,11 @@
+import logging
+import time
 import traceback
 import mysql.connector
 from flask import Flask, render_template, request, redirect, url_for, session
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import date
+from datetime import date, datetime, timedelta
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -375,6 +377,9 @@ def process_payment():
         cursor.close()
         conn.close()
 
+
+from datetime import datetime, date, time, timedelta
+
 @app.route('/cancel_flight', methods=['POST'])
 def cancel_flight():
     if 'user_id' in session and session['user_type'] == 'customer':
@@ -383,20 +388,62 @@ def cancel_flight():
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        query = "DELETE FROM Buy WHERE ticket_ID = %s"
+        query = """
+            SELECT f.departure_date, f.departure_time
+            FROM Ticket t
+            JOIN Flight f ON t.flight_no = f.flight_no AND t.departure_date = f.departure_date AND t.departure_time = f.departure_time AND t.airline_name = f.airline_name
+            WHERE t.ticket_ID = %s
+        """
         cursor.execute(query, (ticket_id,))
+        flight = cursor.fetchone()
 
-        query = "DELETE FROM Ticket WHERE ticket_ID = %s"
-        cursor.execute(query, (ticket_id,))
+        if flight:
+            print("Type of departure_date:", type(flight[0]), "Value:", flight[0])
+            print("Type of departure_time:", type(flight[1]), "Value:", flight[1])
 
-        conn.commit()
+            departure_date = flight[0] if isinstance(flight[0], date) else None
 
-        cursor.close()
-        conn.close()
+            # Handle unexpected timedelta type for departure_time
+            if isinstance(flight[1], timedelta):
+                print("Unexpected timedelta for departure_time, adjusting...")
+                # Convert timedelta to time (assuming it's the duration since midnight)
+                seconds = int(flight[1].total_seconds())
+                departure_time = (datetime.min + flight[1]).time()
+            elif isinstance(flight[1], time):
+                departure_time = flight[1]
+            else:
+                print("departure_time is not a time object.")
+                cursor.close()
+                conn.close()
+                return "Invalid departure time."
 
-        return redirect(url_for('dashboard'))
+            departure_datetime = datetime.combine(departure_date, departure_time)
+            current_datetime = datetime.now()
+            time_difference = departure_datetime - current_datetime
+
+            if time_difference >= timedelta(hours=24):
+                query = "DELETE FROM Buy WHERE ticket_ID = %s"
+                cursor.execute(query, (ticket_id,))
+                query = "DELETE FROM Ticket WHERE ticket_ID = %s"
+                cursor.execute(query, (ticket_id,))
+                conn.commit()
+                
+                cursor.close()
+                conn.close()
+                return redirect(url_for('dashboard'))
+            else:
+                cursor.close()
+                conn.close()
+                return render_template('unable_to_cancel.html')
+        else:
+            cursor.close()
+            conn.close()
+            return "Invalid ticket ID."
     else:
         return redirect(url_for('login'))
+
+
+
 
 @app.route('/rate_flight', methods=['POST'])
 def rate_flight():
