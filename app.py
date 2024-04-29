@@ -468,7 +468,7 @@ def create_flight():
             flight_no = request.form['flight_no']
             departure_date = request.form['departure_date']
             departure_time = request.form['departure_time']
-            airline_name = request.form['airline_name']
+            airline_name = session['airline_name']  # Get the airline name from the session
             arrival_date = request.form['arrival_date']
             arrival_time = request.form['arrival_time']
             ticket_base_price = request.form['ticket_base_price']
@@ -480,35 +480,27 @@ def create_flight():
             conn = get_db_connection()
             cursor = conn.cursor()
 
-            # Check if the airline exists
-            query = "SELECT COUNT(*) FROM Airline WHERE airline_name = %s"
-            cursor.execute(query, (airline_name,))
-            airline_exists = cursor.fetchone()[0]
+            # Check if the airplane exists and belongs to the airline
+            query = "SELECT COUNT(*) FROM Airplane WHERE airplane_id = %s AND airline_name = %s"
+            cursor.execute(query, (airplane_id, airline_name))
+            airplane_exists = cursor.fetchone()[0]
 
-            if airline_exists:
-                # Check if the airplane exists and belongs to the airline
-                query = "SELECT COUNT(*) FROM Airplane WHERE airplane_id = %s AND airline_name = %s"
-                cursor.execute(query, (airplane_id, airline_name))
-                airplane_exists = cursor.fetchone()[0]
+            if airplane_exists:
+                # Insert the new flight into the database
+                query = """
+                    INSERT INTO Flight (flight_no, departure_date, departure_time, airline_name, arrival_date, arrival_time, ticket_base_price, status, airplane_id, departure_airport_code, arrival_airport_code)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """
+                values = (flight_no, departure_date, departure_time, airline_name, arrival_date, arrival_time, ticket_base_price, status, airplane_id, departure_airport_code, arrival_airport_code)
+                cursor.execute(query, values)
+                conn.commit()
 
-                if airplane_exists:
-                    # Insert the new flight into the database
-                    query = """
-                        INSERT INTO Flight (flight_no, departure_date, departure_time, airline_name, arrival_date, arrival_time, ticket_base_price, status, airplane_id, departure_airport_code, arrival_airport_code)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    """
-                    values = (flight_no, departure_date, departure_time, airline_name, arrival_date, arrival_time, ticket_base_price, status, airplane_id, departure_airport_code, arrival_airport_code)
-                    cursor.execute(query, values)
-                    conn.commit()
+                cursor.close()
+                conn.close()
 
-                    cursor.close()
-                    conn.close()
-
-                    return redirect(url_for('staff_dashboard'))
-                else:
-                    return render_template('create_flight.html', error='Invalid airplane ID')
+                return redirect(url_for('staff_dashboard'))
             else:
-                return render_template('create_flight.html', error='Invalid airline name')
+                return render_template('create_flight.html', error='Invalid airplane ID')
         return render_template('create_flight.html')
     return redirect(url_for('login'))
 
