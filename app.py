@@ -361,8 +361,15 @@ def process_payment():
         cursor.execute(update_query, update_values)
 
         conn.commit()
-        return "Flight booked successfully!"
 
+        success = True
+        message = "Payment processed successfully!"
+        return render_template('process_payment.html', success=success, message=message)
+
+    except Exception as e:
+        conn.rollback()
+        error = f"An error occurred during payment processing: {str(e)}"
+        return render_template('process_payment.html', success=False, error=error)
 
     finally:
         cursor.close()
