@@ -398,21 +398,21 @@ def track_spending():
             start_date = request.form['start_date']
             end_date = request.form['end_date']
 
-            query = "SELECT SUM(Ticket.ticket_base_price) AS total_spending FROM Buy JOIN Ticket ON Buy.ticket_ID = Ticket.ticket_ID WHERE Buy.email_address = %s AND Buy.buy_date BETWEEN %s AND %s"
+            query = "SELECT SUM(Ticket.ticket_price) AS total_spending FROM Buy JOIN Ticket ON Buy.ticket_ID = Ticket.ticket_ID WHERE Buy.email_address = %s AND Buy.buy_date BETWEEN %s AND %s"
             values = (user_id, start_date, end_date)
             cursor.execute(query, values)
             total_spending = cursor.fetchone()[0]
 
-            query = "SELECT MONTH(Buy.buy_date) AS month, SUM(Ticket.ticket_base_price) AS monthly_spending FROM Buy JOIN Ticket ON Buy.ticket_ID = Ticket.ticket_ID WHERE Buy.email_address = %s AND Buy.buy_date BETWEEN %s AND %s GROUP BY MONTH(Buy.buy_date)"
+            query = "SELECT MONTH(Buy.buy_date) AS month, SUM(Ticket.ticket_price) AS monthly_spending FROM Buy JOIN Ticket ON Buy.ticket_ID = Ticket.ticket_ID WHERE Buy.email_address = %s AND Buy.buy_date BETWEEN %s AND %s GROUP BY MONTH(Buy.buy_date)"
             values = (user_id, start_date, end_date)
             cursor.execute(query, values)
             monthly_spending = cursor.fetchall()
         else:
-            query = "SELECT SUM(Ticket.ticket_base_price) AS total_spending FROM Buy JOIN Ticket ON Buy.ticket_ID = Ticket.ticket_ID WHERE Buy.email_address = %s AND Buy.buy_date >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)"
+            query = "SELECT SUM(Ticket.ticket_price) AS total_spending FROM Buy JOIN Ticket ON Buy.ticket_ID = Ticket.ticket_ID WHERE Buy.email_address = %s AND Buy.buy_date >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)"
             cursor.execute(query, (user_id,))
             total_spending = cursor.fetchone()[0]
 
-            query = "SELECT MONTH(Buy.buy_date) AS month, SUM(Ticket.ticket_base_price) AS monthly_spending FROM Buy JOIN Ticket ON Buy.ticket_ID = Ticket.ticket_ID WHERE Buy.email_address = %s AND Buy.buy_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH) GROUP BY MONTH(Buy.buy_date)"
+            query = "SELECT MONTH(Buy.buy_date) AS month, SUM(Ticket.ticket_price) AS monthly_spending FROM Buy JOIN Ticket ON Buy.ticket_ID = Ticket.ticket_ID WHERE Buy.email_address = %s AND Buy.buy_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH) GROUP BY MONTH(Buy.buy_date)"
             cursor.execute(query, (user_id,))
             monthly_spending = cursor.fetchall()
 
