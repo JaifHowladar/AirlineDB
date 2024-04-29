@@ -4,7 +4,7 @@ CREATE TABLE Airline (
 
 CREATE TABLE AirlineStaff (
     username VARCHAR(50) PRIMARY KEY,
-    password VARCHAR(50),
+    password VARCHAR(200),
     first_name VARCHAR(50),
     last_name VARCHAR(50),
     airline_name VARCHAR(50),
@@ -88,7 +88,7 @@ CREATE TABLE Customer (
     email_address VARCHAR(255) PRIMARY KEY,
     first_name VARCHAR(50),
     last_name VARCHAR(50),
-    password VARCHAR(50),
+    password VARCHAR(200),
     building_no VARCHAR(20),
     street_name VARCHAR(50),
     apartment_num VARCHAR(20),
