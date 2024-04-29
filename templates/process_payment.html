@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Payment Processing</title>
+</head>
+<body>
+    <h1>Payment Processing</h1>
+    {% if success %}
+        <p>{{ message }}</p>
+        <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+    {% else %}
+        <p>{{ error }}</p>
+        <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+    {% endif %}
+</body>
+</html>

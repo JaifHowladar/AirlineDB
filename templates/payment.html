@@ -8,17 +8,31 @@
     <form method="POST" action="{{ url_for('process_payment') }}">
         <input type="hidden" name="ticket_id" value="{{ ticket_id }}">
         <input type="hidden" name="email_address" value="{{ email_address }}">
+
+        <label for="first_name">First Name:</label>
+        <input type="text" id="first_name" name="first_name" required><br>
+
+        <label for="last_name">Last Name:</label>
+        <input type="text" id="last_name" name="last_name" required><br>
+
+        <label for="dob">Date of Birth:</label>
+        <input type="date" id="dob" name="dob" required><br>
+
         <label for="exp_date">Expiration Date:</label>
         <input type="date" id="exp_date" name="exp_date" required><br>
+
         <label for="card_name">Card Name:</label>
         <input type="text" id="card_name" name="card_name" required><br>
+
         <label for="card_num">Card Number:</label>
         <input type="text" id="card_num" name="card_num" required><br>
+
         <label for="payment_type">Payment Type:</label>
         <select id="payment_type" name="payment_type" required>
             <option value="credit_card">Credit Card</option>
             <option value="debit_card">Debit Card</option>
         </select><br>
+
         <input type="submit" value="Pay">
     </form>
 </body>
