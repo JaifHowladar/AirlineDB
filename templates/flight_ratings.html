@@ -6,16 +6,17 @@
 <body>
     <h1>Flight Ratings</h1>
     {% if ratings %}
+        <p><strong>Average Rating:</strong> {{ avg_rating|round(2) }}</p>
         <table>
             <tr>
                 <th>Rating</th>
                 <th>Comment</th>
             </tr>
             {% for rating in ratings %}
-                <tr>
-                    <td>{{ rating[0] }}</td>
-                    <td>{{ rating[1] }}</td>
-                </tr>
+            <tr>
+                <td>{{ rating[0] }}</td>
+                <td>{{ rating[1] }}</td>
+            </tr>
             {% endfor %}
         </table>
     {% else %}

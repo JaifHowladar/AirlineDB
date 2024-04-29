@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Flights</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1, h2 {
+            margin-bottom: 10px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        form, .back-button {
+            display: inline-block;
+        }
+        input[type="submit"], .back-button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>My Flights</h1>
+    <!-- Back button to customer dashboard -->
+    <a href="dashboard" class="back-button">Back to Dashboard</a>
+    <h2>Future Flights</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Flight No.</th>
+                <th>Departure Date</th>
+                <th>Departure Time</th>
+                <th>Airline</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for flight in future_flights %}
+            <tr>
+                <td>{{ flight[1] }}</td>
+                <td>{{ flight[2] }}</td>
+                <td>{{ flight[3] }}</td>
+                <td>{{ flight[4] }}</td>
+                <td>
+                    <form method="POST" action="{{ url_for('cancel_flight') }}">
+                        <input type="hidden" name="ticket_id" value="{{ flight[0] }}">
+                        <input type="submit" value="Cancel">
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Past Flights</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Flight No.</th>
+                <th>Departure Date</th>
+                <th>Departure Time</th>
+                <th>Airline</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for flight in past_flights %}
+            <tr>
+                <td>{{ flight[1] }}</td>
+                <td>{{ flight[2] }}</td>
+                <td>{{ flight[3] }}</td>
+                <td>{{ flight[4] }}</td>
+                <td>
+                    {% if not flight[5] %}
+                    <form method="POST" action="{{ url_for('rate_flight') }}">
+                        <input type="hidden" name="flight_no" value="{{ flight[1] }}">
+                        <input type="hidden" name="departure_date" value="{{ flight[2] }}">
+                        <input type="hidden" name="departure_time" value="{{ flight[3] }}">
+                        <input type="hidden" name="airline_name" value="{{ flight[4] }}">
+                        <label for="rating">Rating:</label>
+                        <select name="rating" required>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                        </select>
+                        <label for="comment">Comment:</label>
+                        <textarea name="comment" rows="3" required></textarea>
+                        <input type="submit" value="Rate">
+                    </form>
+                    {% else %}
+                    <span>Rated</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

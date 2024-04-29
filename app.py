@@ -674,10 +674,18 @@ def view_flight_ratings():
         cursor.execute(query, values)
         ratings = cursor.fetchall()
 
+        # Calculate the average rating
+        if ratings:
+            total_rating = sum(rating[0] for rating in ratings)
+            avg_rating = total_rating / len(ratings)
+        else:
+            avg_rating = None
+
         cursor.close()
         conn.close()
 
-        return render_template('flight_ratings.html', ratings=ratings)
+        return render_template('flight_ratings.html', ratings=ratings, avg_rating=avg_rating)
+
     return redirect(url_for('login'))
 
 
@@ -751,37 +759,44 @@ def view_frequent_customers():
 @app.route('/view_earned_revenue', methods=['GET'])
 def view_earned_revenue():
     if 'user_id' in session and session['user_type'] == 'staff':
-        airline_name = session['user_id']  # Assuming airline staff username is the airline name
-
+        airline_name = session['airline_name']  # Assuming airline_name is stored in the session
+        
         conn = get_db_connection()
         cursor = conn.cursor()
-
-        # Retrieve the total revenue earned from ticket sales in the last month
-        query = """
-            SELECT SUM(t.ticket_price) AS total_revenue_month
-            FROM Ticket t
-            JOIN Flight f ON t.flight_no = f.flight_no AND t.departure_date = f.departure_date AND t.departure_time = f.departure_time AND t.airline_name = f.airline_name
-            JOIN Buy b ON t.ticket_ID = b.ticket_ID
-            WHERE f.airline_name = %s AND b.buy_date >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
-        """
-        cursor.execute(query, (airline_name,))
-        total_revenue_month = cursor.fetchone()[0]
-
-        # Retrieve the total revenue earned from ticket sales in the last year
-        query = """
-            SELECT SUM(t.ticket_price) AS total_revenue_year
-            FROM Ticket t
-            JOIN Flight f ON t.flight_no = f.flight_no AND t.departure_date = f.departure_date AND t.departure_time = f.departure_time AND t.airline_name = f.airline_name
-            JOIN Buy b ON t.ticket_ID = b.ticket_ID
-            WHERE f.airline_name = %s AND b.buy_date >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)
-        """
-        cursor.execute(query, (airline_name,))
-        total_revenue_year = cursor.fetchone()[0]
-
-        cursor.close()
-        conn.close()
-
-        return render_template('earned_revenue.html', revenue_month=total_revenue_month, revenue_year=total_revenue_year)
+        
+        try:
+            # Revenue for the last month
+            month_query = """
+                SELECT SUM(t.ticket_price)
+                FROM Ticket t
+                JOIN Flight f ON t.flight_no = f.flight_no AND t.departure_date = f.departure_date AND t.departure_time = f.departure_time AND t.airline_name = f.airline_name
+                JOIN Buy b ON t.ticket_ID = b.ticket_ID
+                WHERE f.airline_name = %s AND b.buy_date >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
+            """
+            cursor.execute(month_query, (airline_name,))
+            total_revenue_month = cursor.fetchone()[0] or 0  # Default to 0 if None
+            
+            # Revenue for the last year
+            year_query = """
+                SELECT SUM(t.ticket_price)
+                FROM Ticket t
+                JOIN Flight f ON t.flight_no = f.flight_no AND t.departure_date = f.departure_date AND t.departure_time = f.departure_time AND t.airline_name = f.airline_name
+                JOIN Buy b ON t.ticket_ID = b.ticket_ID
+                WHERE f.airline_name = %s AND b.buy_date >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)
+            """
+            cursor.execute(year_query, (airline_name,))
+            total_revenue_year = cursor.fetchone()[0] or 0  # Default to 0 if None
+            
+            return render_template('earned_revenue.html', revenue_month=total_revenue_month, revenue_year=total_revenue_year)
+        
+        except Exception as e:
+            logging.error(f"Error retrieving revenue data: {str(e)}")
+            return "An error occurred while retrieving revenue data."
+        
+        finally:
+            cursor.close()
+            conn.close()
+    
     return redirect(url_for('login'))
 
 @app.route('/staff_dashboard')
@@ -798,6 +813,45 @@ def staff_dashboard():
         conn.close()
 
         return render_template('staff_dashboard.html', user_id=session['user_id'], flights=flights)
+    else:
+        return redirect(url_for('login'))
+    
+
+@app.route('/view_my_flights')
+def view_my_flights():
+    if 'user_id' in session and session['user_type'] == 'customer':
+        user_id = session['user_id']
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Retrieve future flights
+        future_flights_query = """
+            SELECT t.ticket_ID, f.flight_no, f.departure_date, f.departure_time, f.airline_name
+            FROM Ticket t
+            JOIN Flight f ON t.flight_no = f.flight_no AND t.departure_date = f.departure_date AND t.departure_time = f.departure_time AND t.airline_name = f.airline_name
+            JOIN Buy b ON t.ticket_ID = b.ticket_ID
+            WHERE b.email_address = %s AND f.departure_date >= CURDATE()
+        """
+        cursor.execute(future_flights_query, (user_id,))
+        future_flights = cursor.fetchall()
+        
+        # Retrieve past flights
+        past_flights_query = """
+            SELECT t.ticket_ID, f.flight_no, f.departure_date, f.departure_time, f.airline_name, r.rate IS NOT NULL AS is_rated
+            FROM Ticket t
+            JOIN Flight f ON t.flight_no = f.flight_no AND t.departure_date = f.departure_date AND t.departure_time = f.departure_time AND t.airline_name = f.airline_name
+            JOIN Buy b ON t.ticket_ID = b.ticket_ID
+            LEFT JOIN Review r ON f.flight_no = r.flight_no AND f.departure_date = r.departure_date AND f.departure_time = r.departure_time AND f.airline_name = r.airline_name AND r.email_address = b.email_address
+            WHERE b.email_address = %s AND f.departure_date < CURDATE()
+        """
+        cursor.execute(past_flights_query, (user_id,))
+        past_flights = cursor.fetchall()
+        
+        cursor.close()
+        conn.close()
+        
+        return render_template('view_my_flights.html', future_flights=future_flights, past_flights=past_flights)
     else:
         return redirect(url_for('login'))
 
