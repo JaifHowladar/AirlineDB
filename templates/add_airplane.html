@@ -9,8 +9,6 @@
         <p style="color: red;">{{ error }}</p>
     {% endif %}
     <form method="POST" action="{{ url_for('add_airplane') }}">
-        <label for="airline_name">Airline Name:</label>
-        <input type="text" id="airline_name" name="airline_name" required><br>
         <label for="num_seats">Number of Seats:</label>
         <input type="number" id="num_seats" name="num_seats" required><br>
         <label for="manufacturer">Manufacturer:</label>
@@ -19,8 +17,6 @@
         <input type="text" id="model_num" name="model_num" required><br>
         <label for="manufacture_date">Manufacture Date:</label>
         <input type="date" id="manufacture_date" name="manufacture_date" required><br>
-        <label for="age">Age:</label>
-        <input type="number" id="age" name="age" required><br>
         <input type="submit" value="Add Airplane">
     </form>
 </body>

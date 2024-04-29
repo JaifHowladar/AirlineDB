@@ -3,6 +3,7 @@ import mysql.connector
 from flask import Flask, render_template, request, redirect, url_for, session
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import date
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -30,8 +31,6 @@ def login():
         password = request.form['password']
         user_type = request.form['user_type']
 
-        print(f"Login attempt: username_or_email={username_or_email}, password={password}, user_type={user_type}")
-
         conn = get_db_connection()
         cursor = conn.cursor()
 
@@ -41,22 +40,15 @@ def login():
                 cursor.execute(query, (username_or_email,))
                 user = cursor.fetchone()
 
-                print(f"Customer user: {user}")
-
                 if user:
                     hashed_password = user[3]  # Password is stored in the fourth column for Customer
-                    print(f"Hashed password from database: {hashed_password}")
-                    print(f"Entered password: {password}")
                     if check_password_hash(hashed_password, password):
                         session['user_id'] = user[0]  # Assuming the email_address is the unique identifier
                         session['user_type'] = user_type
-                        print("Login successful")
                         return redirect(url_for('dashboard'))
                     else:
-                        print("Invalid password")
                         return render_template('login.html', error='Invalid username, email, or password')
                 else:
-                    print("User not found")
                     return render_template('login.html', error='Invalid username, email, or password')
 
             elif user_type == 'staff':
@@ -64,27 +56,19 @@ def login():
                 cursor.execute(query, (username_or_email,))
                 user = cursor.fetchone()
 
-                print(f"Staff user: {user}")
-
                 if user:
                     hashed_password = user[1]  # Password is stored in the second column for AirlineStaff
-                    print(f"Hashed password from database: {hashed_password}")
-                    print(f"Entered password: {password}")
-                    
                     if check_password_hash(hashed_password, password):
                         session['user_id'] = user[0]  # Assuming the username is the unique identifier
                         session['user_type'] = user_type
-                        print("Login successful")
+                        session['airline_name'] = user[4]  # Store the airline name in the session
                         return redirect(url_for('dashboard'))
                     else:
-                        print("Invalid password")
                         return render_template('login.html', error='Invalid username, email, or password')
                 else:
-                    print("User not found")
                     return render_template('login.html', error='Invalid username, email, or password')
 
             else:
-                print("Invalid user type")
                 return render_template('login.html', error='Invalid user type')
 
         except Exception as e:
@@ -561,37 +545,32 @@ def change_flight_status():
 def add_airplane():
     if 'user_id' in session and session['user_type'] == 'staff':
         if request.method == 'POST':
-            airline_name = request.form['airline_name']
+            airline_name = session['airline_name']  # Fetch the airline name from the session
             num_seats = request.form['num_seats']
             manufacturer = request.form['manufacturer']
             model_num = request.form['model_num']
             manufacture_date = request.form['manufacture_date']
-            age = request.form['age']
+            
+            # Calculate the age based on the manufacture date
+            manufacture_date = datetime.strptime(manufacture_date, '%Y-%m-%d').date()
+            age = (date.today() - manufacture_date).days // 365
 
             conn = get_db_connection()
             cursor = conn.cursor()
 
-            # Check if the airline exists
-            query = "SELECT COUNT(*) FROM Airline WHERE airline_name = %s"
-            cursor.execute(query, (airline_name,))
-            airline_exists = cursor.fetchone()[0]
+            # Insert the new airplane into the database
+            query = """
+                INSERT INTO Airplane (airline_name, num_seats, manufacturer, model_num, manufacture_date, age)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """
+            values = (airline_name, num_seats, manufacturer, model_num, manufacture_date, age)
+            cursor.execute(query, values)
+            conn.commit()
 
-            if airline_exists:
-                # Insert the new airplane into the database
-                query = """
-                    INSERT INTO Airplane (airline_name, num_seats, manufacturer, model_num, manufacture_date, age)
-                    VALUES (%s, %s, %s, %s, %s, %s)
-                """
-                values = (airline_name, num_seats, manufacturer, model_num, manufacture_date, age)
-                cursor.execute(query, values)
-                conn.commit()
+            cursor.close()
+            conn.close()
 
-                cursor.close()
-                conn.close()
-
-                return redirect(url_for('staff_dashboard'))
-            else:
-                return render_template('add_airplane.html', error='Invalid airline name')
+            return redirect(url_for('staff_dashboard'))
         return render_template('add_airplane.html')
     return redirect(url_for('login'))
 
@@ -757,6 +736,23 @@ def view_earned_revenue():
 
         return render_template('earned_revenue.html', revenue_month=total_revenue_month, revenue_year=total_revenue_year)
     return redirect(url_for('login'))
+
+@app.route('/staff_dashboard')
+def staff_dashboard():
+    if 'user_id' in session and session['user_type'] == 'staff':
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        query = "SELECT * FROM Flight WHERE airline_name = (SELECT airline_name FROM AirlineStaff WHERE username = %s)"
+        cursor.execute(query, (session['user_id'],))
+        flights = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        return render_template('staff_dashboard.html', user_id=session['user_id'], flights=flights)
+    else:
+        return redirect(url_for('login'))
 
 
 @app.route('/logout')
