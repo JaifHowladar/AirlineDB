@@ -9,27 +9,22 @@
             margin: 0;
             padding: 20px;
         }
-
         h1 {
             color: #333;
         }
-
         table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
         }
-
         th, td {
             padding: 10px;
             text-align: left;
             border-bottom: 1px solid #ccc;
         }
-
         th {
             background-color: #f2f2f2;
         }
-
         input[type="submit"] {
             padding: 8px 15px;
             background-color: #4CAF50;
@@ -38,17 +33,14 @@
             border-radius: 4px;
             cursor: pointer;
         }
-
         a {
             color: #4CAF50;
             text-decoration: none;
         }
-
         .no-results {
             color: #666;
             margin-bottom: 20px;
         }
-
         .back-link {
             margin-top: 20px;
         }
@@ -69,21 +61,21 @@
             </thead>
             <tbody>
                 {% for flight in flights %}
-                <tr>
-                    <td>{{ flight[0] }}</td>
-                    <td>{{ flight[1] }}</td>
-                    <td>{{ flight[2] }}</td>
-                    <td>{{ flight[3] }}</td>
-                    <td>
-                        <form method="POST" action="{{ url_for('book_flight') }}">
-                            <input type="hidden" name="flight_no" value="{{ flight[0] }}">
-                            <input type="hidden" name="departure_date" value="{{ flight[1] }}">
-                            <input type="hidden" name="departure_time" value="{{ flight[2] }}">
-                            <input type="hidden" name="airline_name" value="{{ flight[3] }}">
-                            <input type="submit" value="Book">
-                        </form>
-                    </td>
-                </tr>
+                    <tr>
+                        <td>{{ escape(flight[0]) }}</td>
+                        <td>{{ escape(flight[1]) }}</td>
+                        <td>{{ escape(flight[2]) }}</td>
+                        <td>{{ escape(flight[3]) }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('book_flight') }}">
+                                <input type="hidden" name="flight_no" value="{{ escape(flight[0]) }}">
+                                <input type="hidden" name="departure_date" value="{{ escape(flight[1]) }}">
+                                <input type="hidden" name="departure_time" value="{{ escape(flight[2]) }}">
+                                <input type="hidden" name="airline_name" value="{{ escape(flight[3]) }}">
+                                <input type="submit" value="Book">
+                            </form>
+                        </td>
+                    </tr>
                 {% endfor %}
             </tbody>
         </table>

@@ -6,8 +6,7 @@
 <body>
     <h1>Add Airplane Confirmation</h1>
     <p>The airplane has been successfully added to the system.</p>
-
-    <h2>Airplanes Owned by {{ airline_name }}</h2>
+    <h2>Airplanes Owned by {{ escape(airline_name) }}</h2>
     {% if airplanes %}
         <table>
             <tr>
@@ -20,19 +19,18 @@
             </tr>
             {% for airplane in airplanes %}
                 <tr>
-                    <td>{{ airplane[0] }}</td>
-                    <td>{{ airplane[2] }}</td>
-                    <td>{{ airplane[3] }}</td>
-                    <td>{{ airplane[4] }}</td>
-                    <td>{{ airplane[5] }}</td>
-                    <td>{{ airplane[6] }}</td>
+                    <td>{{ escape(airplane[0]) }}</td>
+                    <td>{{ escape(airplane[2]) }}</td>
+                    <td>{{ escape(airplane[3]) }}</td>
+                    <td>{{ escape(airplane[4]) }}</td>
+                    <td>{{ escape(airplane[5]) }}</td>
+                    <td>{{ escape(airplane[6]) }}</td>
                 </tr>
             {% endfor %}
         </table>
     {% else %}
         <p>No airplanes found for the airline.</p>
     {% endif %}
-
     <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
 </body>
 </html>

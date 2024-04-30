@@ -15,15 +15,14 @@
             </tr>
             {% for customer in customers %}
                 <tr>
-                    <td>{{ customer[0] }}</td>
-                    <td>{{ customer[1] }}</td>
-                    <td>{{ customer[2] }}</td>
-                    <td>{{ customer[3] }}</td>
+                    <td>{{ escape(customer[0]) }}</td>
+                    <td>{{ escape(customer[1]) }}</td>
+                    <td>{{ escape(customer[2]) }}</td>
+                    <td>{{ escape(customer[3]) }}</td>
                 </tr>
             {% endfor %}
         </table>
-
-        <h2>Flights Taken by {{ customers[0][1] }} {{ customers[0][2] }}</h2>
+        <h2>Flights Taken by {{ escape(customers[0][1]) }} {{ escape(customers[0][2]) }}</h2>
         {% if flights %}
             <table>
                 <tr>
@@ -36,12 +35,12 @@
                 </tr>
                 {% for flight in flights %}
                     <tr>
-                        <td>{{ flight[0] }}</td>
-                        <td>{{ flight[1] }}</td>
-                        <td>{{ flight[2] }}</td>
-                        <td>{{ flight[3] }}</td>
-                        <td>{{ flight[4] }}</td>
-                        <td>{{ flight[5] }}</td>
+                        <td>{{ escape(flight[0]) }}</td>
+                        <td>{{ escape(flight[1]) }}</td>
+                        <td>{{ escape(flight[2]) }}</td>
+                        <td>{{ escape(flight[3]) }}</td>
+                        <td>{{ escape(flight[4]) }}</td>
+                        <td>{{ escape(flight[5]) }}</td>
                     </tr>
                 {% endfor %}
             </table>
@@ -51,7 +50,6 @@
     {% else %}
         <p>No frequent customers found.</p>
     {% endif %}
-
     <br>
     <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
 </body>

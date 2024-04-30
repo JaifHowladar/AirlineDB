@@ -9,7 +9,6 @@
             margin: 0;
             padding: 20px;
         }
-
         .container {
             max-width: 800px;
             margin: 0 auto;
@@ -18,26 +17,21 @@
             border-radius: 5px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
-
         h1 {
             color: #333;
             text-align: center;
         }
-
         h2 {
             color: #666;
             margin-top: 30px;
         }
-
         ul {
             list-style-type: none;
             padding: 0;
         }
-
         li {
             margin-bottom: 10px;
         }
-
         a {
             display: inline-block;
             padding: 10px 20px;
@@ -47,17 +41,14 @@
             border-radius: 4px;
             transition: background-color 0.3s;
         }
-
         a:hover {
             background-color: #45a049;
         }
-
         .actions {
             display: flex;
             justify-content: center;
             margin-top: 30px;
         }
-
         .actions a {
             margin: 0 10px;
         }
@@ -66,13 +57,11 @@
 <body>
     <div class="container">
         <h1>Welcome to the Air Ticket Reservation System</h1>
-
         <h2>View Public Info</h2>
         <ul>
             <li><a href="{{ url_for('search_flights') }}">Search Flights</a></li>
             <li><a href="{{ url_for('flight_status') }}">Check Flight Status</a></li>
         </ul>
-
         <h2>User Actions</h2>
         <div class="actions">
             <a href="{{ url_for('register') }}">Register</a>

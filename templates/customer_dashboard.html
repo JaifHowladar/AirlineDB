@@ -68,7 +68,7 @@
     </style>
 </head>
 <body>
-    <h1>Welcome, {{ user_id }}!</h1>
+    <h1>Welcome, {{ escape(user_id) }}!</h1>
     <h2>Available Flights</h2>
     <table>
         <thead>
@@ -83,19 +83,19 @@
         <tbody>
             {% for flight in flights %}
             <tr>
-                <td>{{ flight[0] }}</td>
-                <td>{{ flight[1] }}</td>
-                <td>{{ flight[2] }}</td>
-                <td>{{ flight[3] }}</td>
+                <td>{{ escape(flight[0]) }}</td>
+                <td>{{ escape(flight[1]) }}</td>
+                <td>{{ escape(flight[2]) }}</td>
+                <td>{{ escape(flight[3]) }}</td>
                 <td>
                     <form method="POST" action="{{ url_for('book_flight') }}">
-                        <input type="hidden" name="flight_no" value="{{ flight[0] }}">
-                        <input type="hidden" name="departure_date" value="{{ flight[1] }}">
-                        <input type="hidden" name="departure_time" value="{{ flight[2] }}">
-                        <input type="hidden" name="airline_name" value="{{ flight[3] }}">
-                        <input type="hidden" name="first_name" value="{{ first_name }}">
-                        <input type="hidden" name="last_name" value="{{ last_name }}">
-                        <input type="hidden" name="dob" value="{{ date_of_birth }}">
+                        <input type="hidden" name="flight_no" value="{{ escape(flight[0]) }}">
+                        <input type="hidden" name="departure_date" value="{{ escape(flight[1]) }}">
+                        <input type="hidden" name="departure_time" value="{{ escape(flight[2]) }}">
+                        <input type="hidden" name="airline_name" value="{{ escape(flight[3]) }}">
+                        <input type="hidden" name="first_name" value="{{ escape(first_name) }}">
+                        <input type="hidden" name="last_name" value="{{ escape(last_name) }}">
+                        <input type="hidden" name="dob" value="{{ escape(date_of_birth) }}">
                         <input type="submit" value="Book">
                     </form>
                 </td>

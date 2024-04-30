@@ -6,7 +6,7 @@
 <body>
     <h1>Schedule Maintenance</h1>
     {% if error %}
-        <p style="color: red;">{{ error }}</p>
+        <p style="color: red;">{{ escape(error) }}</p>
     {% endif %}
     <form method="POST" action="{{ url_for('schedule_maintenance') }}">
         <label for="airplane_id">Airplane ID:</label>
