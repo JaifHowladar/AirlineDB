@@ -5,28 +5,19 @@
 </head>
 <body>
     <h1>Add Airport</h1>
-    {% if error_message %}
-        <p style="color: red;">{{ escape(error_message) }}</p>
-    {% endif %}
     <form method="POST" action="{{ url_for('add_airport') }}">
         <label for="airport_code">Airport Code:</label>
         <input type="text" id="airport_code" name="airport_code" required><br>
-        
         <label for="airport_name">Airport Name:</label>
         <input type="text" id="airport_name" name="airport_name" required><br>
-        
         <label for="city">City:</label>
         <input type="text" id="city" name="city" required><br>
-        
         <label for="country">Country:</label>
         <input type="text" id="country" name="country" required><br>
-        
         <label for="num_terminals">Number of Terminals:</label>
         <input type="number" id="num_terminals" name="num_terminals" required><br>
-        
         <label for="airport_type">Airport Type:</label>
         <input type="text" id="airport_type" name="airport_type" required><br>
-        
         <input type="submit" value="Add Airport">
     </form>
 </body>

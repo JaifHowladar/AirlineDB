@@ -56,13 +56,13 @@
         <tbody>
             {% for flight in future_flights %}
             <tr>
-                <td>{{ escape(flight[1]) }}</td>
-                <td>{{ escape(flight[2]) }}</td>
-                <td>{{ escape(flight[3]) }}</td>
-                <td>{{ escape(flight[4]) }}</td>
+                <td>{{ flight[1] }}</td>
+                <td>{{ flight[2] }}</td>
+                <td>{{ flight[3] }}</td>
+                <td>{{ flight[4] }}</td>
                 <td>
                     <form method="POST" action="{{ url_for('cancel_flight') }}">
-                        <input type="hidden" name="ticket_id" value="{{ escape(flight[0]) }}">
+                        <input type="hidden" name="ticket_id" value="{{ flight[0] }}">
                         <input type="submit" value="Cancel">
                     </form>
                 </td>
@@ -85,17 +85,17 @@
         <tbody>
             {% for flight in past_flights %}
             <tr>
-                <td>{{ escape(flight[1]) }}</td>
-                <td>{{ escape(flight[2]) }}</td>
-                <td>{{ escape(flight[3]) }}</td>
-                <td>{{ escape(flight[4]) }}</td>
+                <td>{{ flight[1] }}</td>
+                <td>{{ flight[2] }}</td>
+                <td>{{ flight[3] }}</td>
+                <td>{{ flight[4] }}</td>
                 <td>
                     {% if not flight[5] %}
                     <form method="POST" action="{{ url_for('rate_flight') }}">
-                        <input type="hidden" name="flight_no" value="{{ escape(flight[1]) }}">
-                        <input type="hidden" name="departure_date" value="{{ escape(flight[2]) }}">
-                        <input type="hidden" name="departure_time" value="{{ escape(flight[3]) }}">
-                        <input type="hidden" name="airline_name" value="{{ escape(flight[4]) }}">
+                        <input type="hidden" name="flight_no" value="{{ flight[1] }}">
+                        <input type="hidden" name="departure_date" value="{{ flight[2] }}">
+                        <input type="hidden" name="departure_time" value="{{ flight[3] }}">
+                        <input type="hidden" name="airline_name" value="{{ flight[4] }}">
                         <label for="rating">Rating:</label>
                         <select name="rating" required>
                             <option value="1">1</option>

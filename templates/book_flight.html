@@ -6,28 +6,30 @@
 <body>
     <h1>Book Flight</h1>
     <form method="POST" action="{{ url_for('book_flight') }}">
-        <input type="hidden" name="flight_no" value="{{ escape(flight.flight_no) }}">
-        <input type="hidden" name="departure_date" value="{{ escape(flight.departure_date) }}">
-        <input type="hidden" name="departure_time" value="{{ escape(flight.departure_time) }}">
-        <input type="hidden" name="airline_name" value="{{ escape(flight.airline_name) }}">
+        <input type="hidden" name="flight_no" value="{{ flight.flight_no }}">
+        <input type="hidden" name="departure_date" value="{{ flight.departure_date }}">
+        <input type="hidden" name="departure_time" value="{{ flight.departure_time }}">
+        <input type="hidden" name="airline_name" value="{{ flight.airline_name }}">
+
         <div id="ticket-fields">
             <div class="ticket-entry">
                 <label for="first_name_1">First Name:</label>
                 <input type="text" id="first_name_1" name="first_name_1" required><br>
-                
                 <label for="last_name_1">Last Name:</label>
                 <input type="text" id="last_name_1" name="last_name_1" required><br>
-                
                 <label for="dob_1">Date of Birth:</label>
                 <input type="date" id="dob_1" name="dob_1" required><br>
             </div>
         </div>
+
         <button type="button" onclick="addTicketEntry()">Add Another Ticket</button><br>
+
         <input type="submit" value="Proceed to Payment">
     </form>
+
     <script>
         let ticketCount = 1;
-        
+
         function addTicketEntry() {
             ticketCount++;
             const ticketFields = document.getElementById('ticket-fields');
@@ -36,10 +38,8 @@
             newEntry.innerHTML = `
                 <label for="first_name_${ticketCount}">First Name:</label>
                 <input type="text" id="first_name_${ticketCount}" name="first_name_${ticketCount}" required><br>
-                
                 <label for="last_name_${ticketCount}">Last Name:</label>
                 <input type="text" id="last_name_${ticketCount}" name="last_name_${ticketCount}" required><br>
-                
                 <label for="dob_${ticketCount}">Date of Birth:</label>
                 <input type="date" id="dob_${ticketCount}" name="dob_${ticketCount}" required><br>
             `;

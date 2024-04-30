@@ -9,6 +9,7 @@
             margin: 0;
             padding: 0;
         }
+
         .container {
             max-width: 500px;
             margin: 50px auto;
@@ -18,13 +19,16 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             text-align: center;
         }
+
         h1 {
             color: #333;
         }
+
         p {
             color: #666;
             margin-bottom: 20px;
         }
+
         .login-link {
             display: inline-block;
             background-color: #4CAF50;
@@ -34,6 +38,7 @@
             border-radius: 4px;
             transition: background-color 0.3s;
         }
+
         .login-link:hover {
             background-color: #45a049;
         }
@@ -42,9 +47,9 @@
 <body>
     <div class="container">
         <h1>Registration Successful</h1>
-        {% if escape(user_type) == 'customer' %}
+        {% if user_type == 'customer' %}
             <p>Congratulations! You have successfully registered as a customer.</p>
-        {% elif escape(user_type) == 'staff' %}
+        {% elif user_type == 'staff' %}
             <p>Congratulations! You have successfully registered as an airline staff member.</p>
         {% endif %}
         <p>You can now <a href="{{ url_for('login') }}" class="login-link">log in</a> to access your account.</p>

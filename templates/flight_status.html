@@ -9,6 +9,7 @@
             margin: 0;
             padding: 20px;
         }
+
         .container {
             max-width: 600px;
             margin: 0 auto;
@@ -17,18 +18,23 @@
             border-radius: 5px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
+
         h1 {
             color: #333;
             text-align: center;
         }
+
         form {
             margin-top: 20px;
         }
+
         label {
             display: block;
             margin-bottom: 5px;
         }
-        input[type="text"], input[type="date"] {
+
+        input[type="text"],
+        input[type="date"] {
             width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
@@ -36,6 +42,7 @@
             box-sizing: border-box;
             margin-bottom: 10px;
         }
+
         input[type="submit"] {
             background-color: #4CAF50;
             color: #fff;
@@ -48,26 +55,32 @@
             border-radius: 4px;
             cursor: pointer;
         }
+
         input[type="submit"]:hover {
             background-color: #45a049;
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
         }
+
         th, td {
             padding: 10px;
             text-align: left;
             border-bottom: 1px solid #ccc;
         }
+
         th {
             background-color: #f2f2f2;
         }
+
         .error {
             color: red;
             margin-top: 10px;
         }
+
         .back-link {
             display: block;
             text-align: center;
@@ -87,41 +100,43 @@
             <input type="date" id="arrival_departure_date" name="arrival_departure_date" required><br>
             <input type="submit" value="Check Status">
         </form>
+
         {% if flight %}
             <h2>Flight Details</h2>
             <table>
                 <tr>
                     <th>Flight Number</th>
-                    <td>{{ escape(flight[0]) }}</td>
+                    <td>{{ flight[0] }}</td>
                 </tr>
                 <tr>
                     <th>Departure Date</th>
-                    <td>{{ escape(flight[1]) }}</td>
+                    <td>{{ flight[1] }}</td>
                 </tr>
                 <tr>
                     <th>Departure Time</th>
-                    <td>{{ escape(flight[2]) }}</td>
+                    <td>{{ flight[2] }}</td>
                 </tr>
                 <tr>
                     <th>Airline Name</th>
-                    <td>{{ escape(flight[3]) }}</td>
+                    <td>{{ flight[3] }}</td>
                 </tr>
                 <tr>
                     <th>Arrival Date</th>
-                    <td>{{ escape(flight[4]) }}</td>
+                    <td>{{ flight[4] }}</td>
                 </tr>
                 <tr>
                     <th>Arrival Time</th>
-                    <td>{{ escape(flight[5]) }}</td>
+                    <td>{{ flight[5] }}</td>
                 </tr>
                 <tr>
                     <th>Status</th>
-                    <td>{{ escape(flight[7]) }}</td>
+                    <td>{{ flight[7] }}</td>
                 </tr>
             </table>
         {% elif error %}
-            <p class="error">{{ escape(error) }}</p>
+            <p class="error">{{ error }}</p>
         {% endif %}
+
         <a href="{{ url_for('home') }}" class="back-link">Back to Home</a>
     </div>
 </body>

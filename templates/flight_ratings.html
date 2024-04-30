@@ -13,10 +13,10 @@
                 <th>Comment</th>
             </tr>
             {% for rating in ratings %}
-                <tr>
-                    <td>{{ escape(rating[0]) }}</td>
-                    <td>{{ escape(rating[1]) }}</td>
-                </tr>
+            <tr>
+                <td>{{ rating[0] }}</td>
+                <td>{{ rating[1] }}</td>
+            </tr>
             {% endfor %}
         </table>
     {% else %}

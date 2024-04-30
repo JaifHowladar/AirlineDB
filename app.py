@@ -6,7 +6,6 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import date, datetime, timedelta
-from flask import escape
 
 
 app = Flask(__name__)

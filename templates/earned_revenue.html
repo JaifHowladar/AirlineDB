@@ -5,8 +5,8 @@
 </head>
 <body>
     <h1>Earned Revenue</h1>
-    <p>Total Revenue (Last Month): {{ escape(revenue_month) }}</p>
-    <p>Total Revenue (Last Year): {{ escape(revenue_year) }}</p>
+    <p>Total Revenue (Last Month): {{ revenue_month }}</p>
+    <p>Total Revenue (Last Year): {{ revenue_year }}</p>
     <br>
     <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
 </body>

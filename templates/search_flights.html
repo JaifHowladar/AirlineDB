@@ -99,16 +99,16 @@
             <tbody>
                 {% for flight in flights %}
                     <tr>
-                        <td>{{ escape(flight[0]) }}</td>
-                        <td>{{ escape(flight[1]) }}</td>
-                        <td>{{ escape(flight[2]) }}</td>
-                        <td>{{ escape(flight[3]) }}</td>
+                        <td>{{ flight[0] }}</td>
+                        <td>{{ flight[1] }}</td>
+                        <td>{{ flight[2] }}</td>
+                        <td>{{ flight[3] }}</td>
                         <td>
                             <form method="POST" action="{{ url_for('book_flight') }}">
-                                <input type="hidden" name="flight_no" value="{{ escape(flight[0]) }}">
-                                <input type="hidden" name="departure_date" value="{{ escape(flight[1]) }}">
-                                <input type="hidden" name="departure_time" value="{{ escape(flight[2]) }}">
-                                <input type="hidden" name="airline_name" value="{{ escape(flight[3]) }}">
+                                <input type="hidden" name="flight_no" value="{{ flight[0] }}">
+                                <input type="hidden" name="departure_date" value="{{ flight[1] }}">
+                                <input type="hidden" name="departure_time" value="{{ flight[2] }}">
+                                <input type="hidden" name="airline_name" value="{{ flight[3] }}">
                                 <input type="submit" value="Book">
                             </form>
                         </td>

@@ -84,7 +84,7 @@
     <div class="container">
         <h1>Register</h1>
         {% if error %}
-            <p class="error">{{ escape(error) }}</p>
+            <p class="error">{{ error }}</p>
         {% endif %}
         <form method="POST" action="{{ url_for('register') }}">
             <label for="user_type">User Type:</label>
@@ -169,6 +169,7 @@
 
             const form = document.querySelector('form');
             form.addEventListener('submit', (event) => {
+                // Optional: Handle submission logic here
             });
         });
     </script>
