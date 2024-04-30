@@ -22,10 +22,37 @@
                 </tr>
             {% endfor %}
         </table>
+
+        <h2>Flights Taken by {{ customers[0][1] }} {{ customers[0][2] }}</h2>
+        {% if flights %}
+            <table>
+                <tr>
+                    <th>Flight Number</th>
+                    <th>Departure Date</th>
+                    <th>Departure Time</th>
+                    <th>Airline Name</th>
+                    <th>Departure Airport</th>
+                    <th>Arrival Airport</th>
+                </tr>
+                {% for flight in flights %}
+                    <tr>
+                        <td>{{ flight[0] }}</td>
+                        <td>{{ flight[1] }}</td>
+                        <td>{{ flight[2] }}</td>
+                        <td>{{ flight[3] }}</td>
+                        <td>{{ flight[4] }}</td>
+                        <td>{{ flight[5] }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% else %}
+            <p>No flights found for the frequent customer.</p>
+        {% endif %}
     {% else %}
         <p>No frequent customers found.</p>
     {% endif %}
+
     <br>
-    <a href="{{ url_for('staff_dashboard') }}">Back to Dashboard</a>
+    <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
 </body>
 </html>

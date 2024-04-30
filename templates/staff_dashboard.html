@@ -5,6 +5,26 @@
 </head>
 <body>
     <h1>Welcome, {{ user_id }}!</h1>
+
+    <h2>Search Flights</h2>
+    <form method="POST" action="{{ url_for('staff_dashboard') }}">
+        <label for="source_airport">Source Airport/City:</label>
+        <input type="text" name="source_airport" id="source_airport">
+
+        <label for="destination_airport">Destination Airport/City:</label>
+        <input type="text" name="destination_airport" id="destination_airport">
+
+        <label for="start_date">Start Date:</label>
+        <input type="date" name="start_date" id="start_date">
+
+        <label for="end_date">End Date:</label>
+        <input type="date" name="end_date" id="end_date">
+
+        <input type="submit" value="Search">
+    </form>
+
+    <a href="{{ url_for('dashboard') }}">Show All Flights</a>
+
     <h2>Flights</h2>
     {% if flights %}
         <table>
@@ -22,7 +42,7 @@
                     <td>{{ flight[1] }}</td>
                     <td>{{ flight[2] }}</td>
                     <td>{{ flight[3] }}</td>
-                    <td>{{ flight[7] }}</td>
+                    <td>{{ flight[4] }}</td>
                     <td>
                         <a href="{{ url_for('view_flight_customers', flight_no=flight[0], departure_date=flight[1], departure_time=flight[2], airline_name=flight[3]) }}">View Customers</a>
                         <form method="POST" action="{{ url_for('change_flight_status') }}">
@@ -44,6 +64,7 @@
     {% else %}
         <p>No flights found.</p>
     {% endif %}
+
     <br>
     <a href="{{ url_for('create_flight') }}">Create New Flight</a>
     <br>

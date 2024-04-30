@@ -7,6 +7,7 @@ from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import date, datetime, timedelta
 
+
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 
@@ -378,7 +379,6 @@ def process_payment():
         conn.close()
 
 
-from datetime import datetime, date, time, timedelta
 
 @app.route('/cancel_flight', methods=['POST'])
 def cancel_flight():
@@ -588,21 +588,38 @@ def create_flight():
             airplane_exists = cursor.fetchone()[0]
 
             if airplane_exists:
-                # Insert the new flight into the database
+                # Check if the airplane is under maintenance during the flight period
                 query = """
-                    INSERT INTO Flight (flight_no, departure_date, departure_time, airline_name, arrival_date, arrival_time, ticket_base_price, status, airplane_id, departure_airport_code, arrival_airport_code)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    SELECT COUNT(*)
+                    FROM Maintenance
+                    WHERE airplane_id = %s
+                    AND (
+                        (start_date <= %s AND end_date >= %s)
+                        OR (start_date <= %s AND end_date >= %s)
+                        OR (start_date >= %s AND end_date <= %s)
+                    )
                 """
-                values = (flight_no, departure_date, departure_time, airline_name, arrival_date, arrival_time, ticket_base_price, status, airplane_id, departure_airport_code, arrival_airport_code)
-                cursor.execute(query, values)
-                conn.commit()
+                cursor.execute(query, (airplane_id, departure_date, departure_date, arrival_date, arrival_date, departure_date, arrival_date))
+                maintenance_exists = cursor.fetchone()[0]
 
-                cursor.close()
-                conn.close()
+                if maintenance_exists:
+                    return render_template('create_flight.html', error='The selected airplane is under maintenance during the flight period.')
+                else:
+                    # Insert the new flight into the database
+                    query = """
+                        INSERT INTO Flight (flight_no, departure_date, departure_time, airline_name, arrival_date, arrival_time, ticket_base_price, status, airplane_id, departure_airport_code, arrival_airport_code)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """
+                    values = (flight_no, departure_date, departure_time, airline_name, arrival_date, arrival_time, ticket_base_price, status, airplane_id, departure_airport_code, arrival_airport_code)
+                    cursor.execute(query, values)
+                    conn.commit()
 
-                return redirect(url_for('staff_dashboard'))
+                    cursor.close()
+                    conn.close()
+
+                    return redirect(url_for('dashboard'))
             else:
-                return render_template('create_flight.html', error='Invalid airplane ID')
+                return render_template('create_flight.html', error='Invalid airplane ID or the airplane does not belong to your airline.')
         return render_template('create_flight.html')
     return redirect(url_for('login'))
 
@@ -631,7 +648,7 @@ def change_flight_status():
         cursor.close()
         conn.close()
 
-        return redirect(url_for('staff_dashboard'))
+        return redirect(url_for('dashboard'))
     return redirect(url_for('login'))
 
 
@@ -661,17 +678,25 @@ def add_airplane():
             cursor.execute(query, values)
             conn.commit()
 
+            # Retrieve all airplanes owned by the airline
+            query = """
+                SELECT * FROM Airplane WHERE airline_name = %s
+            """
+            cursor.execute(query, (airline_name,))
+            airplanes = cursor.fetchall()
+
             cursor.close()
             conn.close()
 
-            return redirect(url_for('staff_dashboard'))
+            return render_template('add_airplane_confirmation.html', airline_name=airline_name, airplanes=airplanes)
         return render_template('add_airplane.html')
     return redirect(url_for('login'))
-
 
 @app.route('/add_airport', methods=['GET', 'POST'])
 def add_airport():
     if 'user_id' in session and session['user_type'] == 'staff':
+        error_message = None  # Initialize the error message variable
+
         if request.method == 'POST':
             airport_code = request.form['airport_code']
             airport_name = request.form['airport_name']
@@ -683,20 +708,31 @@ def add_airport():
             conn = get_db_connection()
             cursor = conn.cursor()
 
-            # Insert the new airport into the database
-            query = """
-                INSERT INTO Airport (airport_code, airport_name, city, country, num_terminals, airport_type)
-                VALUES (%s, %s, %s, %s, %s, %s)
-            """
-            values = (airport_code, airport_name, city, country, num_terminals, airport_type)
-            cursor.execute(query, values)
-            conn.commit()
+            try:
+                # Insert the new airport into the database
+                query = """
+                    INSERT INTO Airport (airport_code, airport_name, city, country, num_terminals, airport_type)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                """
+                values = (airport_code, airport_name, city, country, num_terminals, airport_type)
+                cursor.execute(query, values)
+                conn.commit()
 
-            cursor.close()
-            conn.close()
+                return redirect(url_for('staff_dashboard'))
 
-            return redirect(url_for('staff_dashboard'))
-        return render_template('add_airport.html')
+            except mysql.connector.IntegrityError as e:
+                # Handle the primary key constraint violation
+                if "Duplicate entry" in str(e):
+                    error_message = "Airport code already exists. Please enter a unique airport code."
+                else:
+                    error_message = "An error occurred while adding the airport. Please try again."
+
+            finally:
+                cursor.close()
+                conn.close()
+
+        return render_template('add_airport.html', error_message=error_message)
+
     return redirect(url_for('login'))
 
 
@@ -767,7 +803,7 @@ def schedule_maintenance():
                 cursor.close()
                 conn.close()
 
-                return redirect(url_for('staff_dashboard'))
+                return redirect(url_for('dashboard'))
             else:
                 return render_template('schedule_maintenance.html', error='Invalid airplane ID')
         return render_template('schedule_maintenance.html')
@@ -777,12 +813,12 @@ def schedule_maintenance():
 @app.route('/view_frequent_customers', methods=['GET'])
 def view_frequent_customers():
     if 'user_id' in session and session['user_type'] == 'staff':
-        airline_name = session['user_id']  # Assuming airline staff username is the airline name
+        airline_name = session['airline_name']
 
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        # Retrieve the most frequent customers within the last year
+        # Retrieve the most frequent customers within the last year for the specific airline
         query = """
             SELECT c.email_address, c.first_name, c.last_name, COUNT(*) AS flight_count
             FROM Customer c
@@ -797,10 +833,25 @@ def view_frequent_customers():
         cursor.execute(query, (airline_name,))
         frequent_customers = cursor.fetchall()
 
+        customer_flights = []
+        if frequent_customers:
+            customer_email = frequent_customers[0][0]
+
+            # Retrieve all flights taken by the frequent customer on the specific airline
+            query = """
+                SELECT f.flight_no, f.departure_date, f.departure_time, f.airline_name, f.departure_airport_code, f.arrival_airport_code
+                FROM Flight f
+                JOIN Ticket t ON f.flight_no = t.flight_no AND f.departure_date = t.departure_date AND f.departure_time = t.departure_time AND f.airline_name = t.airline_name
+                JOIN Buy b ON t.ticket_ID = b.ticket_ID
+                WHERE b.email_address = %s AND f.airline_name = %s
+            """
+            cursor.execute(query, (customer_email, airline_name))
+            customer_flights = cursor.fetchall()
+
         cursor.close()
         conn.close()
 
-        return render_template('frequent_customers.html', customers=frequent_customers)
+        return render_template('frequent_customers.html', customers=frequent_customers, flights=customer_flights)
     return redirect(url_for('login'))
 
 @app.route('/view_earned_revenue', methods=['GET'])
@@ -846,22 +897,49 @@ def view_earned_revenue():
     
     return redirect(url_for('login'))
 
-@app.route('/staff_dashboard')
+@app.route('/staff_dashboard', methods=['GET', 'POST'])
 def staff_dashboard():
-    if 'user_id' in session and session['user_type'] == 'staff':
-        conn = get_db_connection()
-        cursor = conn.cursor()
+    if 'user_id' not in session or session['user_type'] != 'staff':
+        return redirect(url_for('login'))
 
-        query = "SELECT * FROM Flight WHERE airline_name = (SELECT airline_name FROM AirlineStaff WHERE username = %s)"
-        cursor.execute(query, (session['user_id'],))
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    if request.method == 'POST':
+        source_airport = request.form['source_airport']
+        destination_airport = request.form['destination_airport']
+        start_date = request.form['start_date']
+        end_date = request.form['end_date']
+
+        query = """
+            SELECT f.flight_no, f.departure_date, f.departure_time, f.airline_name, f.status
+            FROM Flight f
+            JOIN Airport ad ON f.departure_airport_code = ad.airport_code
+            JOIN Airport aa ON f.arrival_airport_code = aa.airport_code
+            WHERE f.airline_name = %s
+            AND (ad.airport_code = %s OR ad.city = %s)
+            AND (aa.airport_code = %s OR aa.city = %s)
+            AND f.departure_date BETWEEN %s AND %s
+        """
+        cursor.execute(query, (session['airline_name'], source_airport, source_airport, destination_airport, destination_airport, start_date, end_date))
+        flights = cursor.fetchall()
+    else:
+        # Default: Show flights for the next 30 days
+        default_end_date = datetime.now().date() + timedelta(days=30)
+        
+        query = """
+            SELECT f.flight_no, f.departure_date, f.departure_time, f.airline_name, f.status
+            FROM Flight f
+            WHERE f.airline_name = %s
+            AND f.departure_date BETWEEN CURDATE() AND %s
+        """
+        cursor.execute(query, (session['airline_name'], default_end_date))
         flights = cursor.fetchall()
 
-        cursor.close()
-        conn.close()
+    cursor.close()
+    conn.close()
 
-        return render_template('staff_dashboard.html', user_id=session['user_id'], flights=flights)
-    else:
-        return redirect(url_for('login'))
+    return render_template('staff_dashboard.html', user_id=session['user_id'], flights=flights)
     
 
 @app.route('/view_my_flights')
