@@ -297,7 +297,7 @@ def book_flight():
                     INSERT INTO Ticket (flight_no, departure_date, departure_time, airline_name, first_name, last_name, date_of_birth, ticket_price)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 """
-                values = (flight_no, departure_date, departure_time, airline_name, first_name, last_name, dob, ticket_base_price)
+                values = (flight_no, departure_date, departure_time, airline_name, first_name, last_name, None, ticket_base_price)
                 cursor.execute(query, values)
                 ticket_id = cursor.lastrowid
 
