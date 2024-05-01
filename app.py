@@ -718,7 +718,7 @@ def add_airport():
                 cursor.execute(query, values)
                 conn.commit()
 
-                return redirect(url_for('staff_dashboard'))
+                return redirect(url_for('dashboard'))
 
             except mysql.connector.IntegrityError as e:
                 # Handle the primary key constraint violation
