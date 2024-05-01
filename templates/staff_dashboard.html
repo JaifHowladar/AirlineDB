@@ -42,7 +42,7 @@
                     <td>{{ flight[1] }}</td>
                     <td>{{ flight[2] }}</td>
                     <td>{{ flight[3] }}</td>
-                    <td>{{ flight[4] }}</td>
+                    <td>{{ flight[7] }}</td>
                     <td>
                         <a href="{{ url_for('view_flight_customers', flight_no=flight[0], departure_date=flight[1], departure_time=flight[2], airline_name=flight[3]) }}">View Customers</a>
                         <form method="POST" action="{{ url_for('change_flight_status') }}">
