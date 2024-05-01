@@ -985,7 +985,7 @@ def view_my_flights():
 def logout():
     session.pop('user_id', None)
     session.pop('user_type', None)
-    return redirect(url_for('login'))
+    return redirect(url_for('home'))
 
 if __name__ == '__main__':
     app.run(debug=True, port=8080)
